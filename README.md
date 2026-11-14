@@ -1,6 +1,6 @@
 # Fishing Notes
 
-> Thai-first fishing notes from Japanese pro-angler videos — seabass, bass, eging, and tenya.
+> Thai-first fishing notes from Japanese pro-angler videos - seabass, bass, eging, and tenya.
 
 Fishing Notes is a Thai-language blog that distills lure-fishing techniques from
 Japanese pro anglers. Every article is a plain Markdown file in `content/posts/`
@@ -9,11 +9,11 @@ and is picked up by the site automatically.
 The site uses the same architecture as
 [`rust-blog.github.io`](https://github.com/rust-blog/rust-blog.github.io):
 
-- **Rust 2024 + Leptos 0.8 (CSR)** — the UI is written in Rust
-- **Trunk** — compiles the app to WebAssembly
-- **pulldown-cmark** — renders Markdown to HTML
-- **syntect** — syntax-highlights code blocks at render time
-- **GitHub Pages** — deployed with GitHub Actions
+- **Rust 2024 + Leptos 0.8 (CSR)** - the UI is written in Rust
+- **Trunk** - compiles the app to WebAssembly
+- **pulldown-cmark** - renders Markdown to HTML
+- **syntect** - syntax-highlights code blocks at render time
+- **GitHub Pages** - deployed with GitHub Actions
 
 ## Quick start
 
@@ -56,7 +56,7 @@ Markdown content...
 ```
 
 - `draft: true` hides the post
-- `slug` is optional — the filename is used as the slug (must match `a-z`, `0-9`, `-`)
+- `slug` is optional - the filename is used as the slug (must match `a-z`, `0-9`, `-`)
 - Put images in `content/assets/` and reference them as `![alt](assets/name.png)`
 - Tables, task lists, and footnotes are supported via GitHub-flavored Markdown
 
@@ -88,10 +88,10 @@ https://suradet-ps.github.io/fishing-notes/
 
 If you change the username or repository name, update four places:
 
-1. `src/site.rs` — `SITE_URL`, `GITHUB_URL`
-2. `src/util.rs` — `detect_base()` to match the repo base path
-3. `index.html` — `og:image`, `og:url`, Twitter image
-4. `.github/workflows/deploy.yml` and `ci.yml` — `--public-url /<repo>/`
+1. `src/site.rs` - `SITE_URL`, `GITHUB_URL`
+2. `src/util.rs` - `detect_base()` to match the repo base path
+3. `index.html` - `og:image`, `og:url`, Twitter image
+4. `.github/workflows/deploy.yml` and `ci.yml` - `--public-url /<repo>/`
 
 If you use a custom domain or a `<username>.github.io` site, set `--public-url`
 to `/`.
@@ -107,4 +107,4 @@ translation from auto-generated captions.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT - see [LICENSE](LICENSE).
