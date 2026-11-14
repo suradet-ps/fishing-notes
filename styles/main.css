@@ -1,0 +1,1059 @@
+/*
+   Fishing Notes - "Tide & Paper" design system
+   Editorial, type-first, quiet. Deep-sea teal, warm sand, and a single coral
+   accent. Hairlines over shadows, one Thai-first family over webfonts.
+*/
+
+:root {
+    /* ── Primitives ── */
+    --white: #fffdf8;
+    --ink-900: #071f26;
+    --ink-800: #0f3038;
+    --ink-700: #23464c;
+    --ink-500: #5f7470;
+    --ink-300: #8aa39d;
+    --paper-50: #fbf6ed;
+    --paper-100: #f4ead9;
+    --paper-200: #e7d8c2;
+    --paper-300: #d8c4a8;
+
+    --rust-600: #0f766e;
+    --rust-500: #14857c;
+    --rust-400: #14b8a6;
+    --rust-soft: rgba(15, 118, 110, 0.10);
+
+    /* ── Light theme ── */
+    --bg: var(--paper-50);
+    --surface: var(--white);
+    --surface-2: var(--paper-100);
+    --text: var(--ink-800);
+    --text-strong: var(--ink-900);
+    --text-muted: var(--ink-500);
+    --border: var(--paper-200);
+    --border-strong: var(--paper-300);
+
+    --accent: var(--rust-600);
+    --accent-strong: #0b5f59;
+    --accent-text: var(--rust-600);
+    --accent-soft: var(--rust-soft);
+    --tag-text: var(--ink-700);
+
+    /* code keeps a dark surface in both themes - Catppuccin Mocha, so the
+       framed blocks carry the same palette as the reference blog */
+    --code-bg: #1e1e2e;
+    --code-text: #cdd6f4;
+    --code-border: #313244;
+    --code-bar-text: #a6adc8;
+    --code-line: rgba(205, 214, 244, 0.1);
+
+    --shadow-xs: 0 1px 2px rgba(20, 18, 15, 0.05);
+    --shadow-sm: 0 1px 3px rgba(20, 18, 15, 0.07),
+        0 2px 8px rgba(20, 18, 15, 0.05);
+
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, "Noto Sans Thai", sans-serif;
+    /* Content stack: system Thai families that ship Latin too, so Thai and
+       Latin share one design and one apparent size. No system Thai serif
+       exists, so prose runs these instead of pairing a Latin serif with an
+       unrelated Thai fallback (the old two-fonts-on-one-line problem). */
+    --font-content: "Sukhumvit Set", "Leelawadee UI", "Leelawadee",
+        "Noto Sans Thai", Tahoma, "Thonburi", var(--font-sans);
+    --font-serif: "Iowan Old Style", "Palatino Linotype", Georgia,
+        "Times New Roman", "Noto Serif Thai", serif;
+    /* Thai fonts trail the mono faces: Latin stays monospaced, Thai (search
+       box, inline code, tags) uses a proportional face instead of Thonburi. */
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono",
+        "Fira Code", Menlo, Consolas, "Sukhumvit Set", "Leelawadee UI",
+        "Noto Sans Thai", monospace;
+
+    --maxw: 960px;
+    --maxw-prose: 680px;
+
+    --maxw-index: 820px;
+    color-scheme: light;
+}
+
+[data-theme="dark"] {
+    --bg: #061a20;
+    --surface: #0b252d;
+    --surface-2: #0f3038;
+    --text: #d6e4e0;
+    --text-strong: #f1f7f4;
+    --text-muted: #8ba7a1;
+    --border: #173a42;
+    --border-strong: #23515a;
+
+    --accent: var(--rust-400);
+    --accent-strong: #2dd4bf;
+    --accent-text: #5eead4;
+    --accent-soft: rgba(94, 234, 212, 0.12);
+    --tag-text: #a7c4bd;
+
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45);
+
+    color-scheme: dark;
+}
+
+/* Reset & base */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* Visible focus ring for keyboard users (mouse clicks don't show it).
+   No border-radius override: the outline follows the element's own
+   radius in modern browsers. */
+:focus-visible {
+    outline: 2px solid var(--accent-strong);
+    outline-offset: 2px;
+}
+
+/* Skip-to-content link: hidden until focused by keyboard. */
+.skip-link {
+    position: absolute;
+    top: -100%;
+    left: 1rem;
+    z-index: 100;
+    padding: 0.5rem 0.9rem;
+    background: var(--accent-strong);
+    color: var(--bg);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+}
+
+.skip-link:focus-visible {
+    top: 0.75rem;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+button {
+    font-family: inherit;
+    cursor: pointer;
+}
+
+::selection {
+    background: var(--accent-soft);
+    color: var(--text-strong);
+}
+
+.container {
+    width: 100%;
+    max-width: var(--maxw);
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 5vw, 2.5rem);
+}
+
+/* Home reuses the centered content column so it lines up with article/about */
+.home {
+    max-width: var(--maxw-index);
+}
+
+.main {
+    min-height: 68vh;
+    padding-block: 0 5rem;
+}
+
+/* Header / Nav - quiet, hairline, mono brand */
+
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: color-mix(in srgb, var(--bg) 86%, transparent);
+    backdrop-filter: saturate(140%) blur(12px);
+    -webkit-backdrop-filter: saturate(140%) blur(12px);
+    border-bottom: 1px solid var(--border);
+}
+
+.nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text-strong);
+}
+
+.brand-mark {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--accent-strong);
+    color: var(--accent-strong);
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.brand-mark svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+    fill: var(--rust-400);
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.nav-links .nav-link {
+    display: inline-block;
+    padding: 0.4rem 0.7rem;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    transition: color 0.2s ease;
+}
+
+.nav-links a:hover .nav-link {
+    color: var(--text-strong);
+}
+
+.nav-links a[aria-current="page"] .nav-link {
+    color: var(--accent-text);
+}
+
+.theme-toggle {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    margin-left: 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-muted);
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-toggle:hover {
+    color: var(--accent-text);
+    border-color: var(--border-strong);
+}
+
+.theme-toggle-icon {
+    line-height: 1;
+}
+
+@media (max-width: 560px) {
+    .nav-inner {
+        gap: 0.35rem;
+    }
+
+    .brand {
+        gap: 0.4rem;
+        font-size: 0.82rem;
+    }
+
+    .brand-mark {
+        width: 24px;
+        height: 24px;
+    }
+
+    .nav-links {
+        gap: 0;
+    }
+
+    .nav-links .nav-link {
+        padding: 0.3rem 0.38rem;
+        font-size: 0.76rem;
+    }
+
+    .theme-toggle {
+        width: 30px;
+        height: 30px;
+        margin-left: 0.15rem;
+    }
+}
+
+/* Hero - fish mark, editorial title, sea-glass wash */
+
+.hero {
+    position: relative;
+    max-width: var(--maxw-index);
+    padding-block: clamp(3rem, 9vw, 5.5rem) clamp(2.5rem, 7vw, 4rem);
+}
+
+.hero-art {
+    display: grid;
+    place-items: center;
+    width: 58px;
+    height: 58px;
+    margin-bottom: 1.4rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 50%;
+    color: var(--accent);
+}
+
+.hero-art svg {
+    width: 30px;
+    height: 30px;
+}
+
+.hero-kicker {
+    margin: 0 0 0.75rem;
+    color: var(--accent-text);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+}
+
+.hero-title {
+    max-width: 22ch;
+    margin: 0 0 0.9rem;
+    color: var(--text-strong);
+    font-family: var(--font-content);
+    font-size: clamp(2rem, 5.2vw, 3.35rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+.hero-sub {
+    max-width: 56ch;
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1.03rem;
+    line-height: 1.8;
+}
+
+/* Toolbar - hairline search, mono tag chips */
+
+.post-toolbar {
+    max-width: var(--maxw-index);
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.6rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.1rem;
+    border-bottom: 1px solid var(--border-strong);
+    transition: border-color 0.2s ease;
+}
+
+.search-box:focus-within {
+    border-color: var(--accent);
+}
+
+.search-icon {
+    position: absolute;
+    left: 0;
+    display: grid;
+    place-items: center;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.65rem 0 0.65rem 1.9rem;
+    border: none;
+    background: transparent;
+    color: var(--text-strong);
+    font-family: var(--font-mono);
+    font-size: 0.92rem;
+    outline: none;
+}
+
+.search-input::placeholder {
+    color: var(--ink-300);
+}
+
+[data-theme="dark"] .search-input::placeholder {
+    color: var(--text-muted);
+}
+
+.tag-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.1rem;
+}
+
+.tag-chip {
+    padding: 0.15rem 0;
+    border: none;
+    background: transparent;
+    color: var(--tag-text);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.01em;
+    transition: color 0.15s ease;
+}
+
+.tag-chip::before {
+    content: "#";
+    opacity: 0.5;
+}
+
+.tag-chip:not(.static):hover {
+    color: var(--accent-text);
+}
+
+.tag-chip.active {
+    color: var(--accent-text);
+}
+
+.tag-chip.static {
+    cursor: default;
+}
+
+/* Language badge - rendered only for posts that are not Thai (the default) */
+.lang-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.05rem 0.38rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    line-height: 1.5;
+}
+
+.result-count {
+    max-width: var(--maxw-index);
+    margin: 0 0 1.75rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* Post index - editorial rows, hairlines, no cards */
+
+.post-index {
+    max-width: var(--maxw-index);
+}
+
+.post-row {
+    display: block;
+    padding: 1.6rem 0;
+    border-top: 1px solid var(--border);
+}
+
+.post-row + .post-row {
+    /* handled by border-top above */
+}
+
+.post-row-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.55rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.03em;
+}
+
+.post-row-title {
+    margin: 0 0 0.5rem;
+    font-family: var(--font-content);
+    font-size: 1.45rem;
+    line-height: 1.4;
+    font-weight: 600;
+    color: var(--text-strong);
+    transition: color 0.18s ease;
+}
+
+a:hover .post-row-title {
+    color: var(--accent-text);
+}
+
+.post-row-desc {
+    margin: 0 0 0.7rem;
+    font-family: var(--font-content);
+    color: var(--text-muted);
+    font-size: 0.94rem;
+    line-height: 1.75;
+}
+
+.post-row-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 1rem;
+}
+
+.post-row-tags .tag-chip {
+    color: var(--tag-text);
+}
+
+.empty-state {
+    max-width: var(--maxw-index);
+    padding: 3rem 0;
+    color: var(--text-muted);
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.05rem;
+}
+
+/* Article - Thai-first prose, mono meta */
+
+.post-page,
+.about-page {
+    max-width: var(--maxw-prose);
+    margin-inline: auto;
+}
+
+.article {
+    padding-top: clamp(1.5rem, 5vw, 2.5rem);
+}
+
+.article-header {
+    margin-bottom: 2.75rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 1.75rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+    transition: color 0.2s ease;
+}
+
+a:hover .back-link,
+.back-link:hover {
+    color: var(--accent-text);
+}
+
+.article-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.article-title {
+    margin: 0 0 1.1rem;
+    font-family: var(--font-content);
+    font-size: clamp(1.75rem, 4.5vw, 2.5rem);
+    line-height: 1.35;
+    font-weight: 600;
+    color: var(--text-strong);
+}
+
+.article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+}
+
+/* prose typography */
+.prose {
+    font-family: var(--font-content);
+    font-size: 1.1rem;
+    line-height: 1.85;
+    color: var(--text);
+}
+
+.prose > *:first-child {
+    margin-top: 0;
+}
+
+.prose h2,
+.prose h3,
+.prose h4 {
+    font-family: var(--font-content);
+    color: var(--text-strong);
+    line-height: 1.45;
+    margin: 2.4rem 0 1rem;
+}
+
+.prose h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.prose h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.prose p {
+    margin: 1.15rem 0;
+}
+
+.prose a {
+    color: var(--accent-text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+    overflow-wrap: break-word;
+}
+
+.prose a:hover {
+    color: var(--accent-strong);
+}
+
+/* live in-post demos (mount points emitted by the markdown `demo` directive) */
+.demo-slot {
+    margin: 1.75rem 0;
+    min-height: 2.6rem;
+}
+
+.demo-counter {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-strong);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    padding: 0.55rem 1.1rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.demo-counter:hover {
+    border-color: var(--accent-strong);
+    color: var(--accent-text);
+}
+
+.demo-counter:active {
+    transform: translateY(1px);
+}
+
+.demo-counter-label {
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.prose strong {
+    color: var(--text-strong);
+    font-weight: 600;
+}
+
+.prose ul,
+.prose ol {
+    margin: 1.15rem 0;
+    padding-left: 1.5rem;
+}
+
+.prose li {
+    margin: 0.45rem 0;
+}
+
+.prose blockquote {
+    margin: 2rem 0;
+    padding: 0.1rem 0 0.1rem 1.4rem;
+    border-left: 2px solid var(--accent);
+    color: var(--text-muted);
+}
+
+.prose blockquote p {
+    margin: 0.4rem 0;
+}
+
+.prose hr {
+    margin: 3rem 0;
+    border: none;
+    border-top: 1px solid var(--border);
+}
+
+/* inline code */
+.prose :not(pre) > code {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    padding: 0.12em 0.38em;
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--accent-text);
+    overflow-wrap: break-word;
+}
+
+/* wide tables scroll inside their own container on narrow screens. */
+.prose .table-wrap {
+    overflow-x: auto;
+    margin: 1.75rem 0;
+    -webkit-overflow-scrolling: touch;
+}
+
+.prose .table-wrap table {
+    margin: 0;
+}
+
+/* first (label) columns get a little breathing room instead of shrinking
+   to their narrowest cell. */
+.prose .table-wrap table th:first-child,
+.prose .table-wrap table td:first-child {
+    min-width: 6rem;
+}
+
+/* code blocks - a dark plate in both themes, highlighted by syntect. */
+.prose pre {
+    position: relative;
+    margin: 2rem 0;
+    padding: 1.25rem 1.4rem;
+    border-radius: var(--radius-md);
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    overflow-x: auto;
+    box-shadow: var(--shadow-sm);
+}
+
+.prose pre code {
+    font-family: var(--font-mono);
+    font-size: 0.84rem;
+    line-height: 1.7;
+    background: transparent;
+    padding: 0;
+}
+
+/* Keep the code/body ratio of the reference blog: a small step up on
+   desktop, so code and article text stay in the same visual key. */
+@media (min-width: 640px) {
+    .prose pre code {
+        font-size: 0.875rem;
+    }
+}
+
+/* framed code blocks - traffic-light dots, filename, language badge, copy
+   button. The header bar sits on the same plate the code is highlighted on. */
+.prose .code-frame {
+    margin: 2rem 0;
+    border: 1px solid var(--code-border);
+    border-radius: var(--radius-md);
+    background: var(--code-bg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.prose .code-frame pre {
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.prose .code-frame-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    height: 2.75rem;
+    padding-inline: 0.9rem;
+    border-bottom: 1px solid var(--code-line);
+}
+
+.prose .code-frame-dots {
+    display: inline-flex;
+    flex-shrink: 0;
+    gap: 0.375rem;
+}
+
+.prose .code-frame-dots i {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+}
+
+.prose .code-frame-dots i:nth-child(1) {
+    background: #f38ba8;
+}
+
+.prose .code-frame-dots i:nth-child(2) {
+    background: #f9e2af;
+}
+
+.prose .code-frame-dots i:nth-child(3) {
+    background: #a6e3a1;
+}
+
+.prose .code-frame-title {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--code-bar-text);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.prose .code-frame-lang {
+    margin-left: auto;
+    color: var(--code-bar-text);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.prose .code-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.5rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--code-bar-text);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.prose .code-copy:hover {
+    background: rgba(205, 214, 244, 0.1);
+    color: var(--code-text);
+}
+
+.prose .code-copy svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.prose .code-frame pre ::selection {
+    background: rgba(137, 180, 250, 0.3);
+    color: var(--code-text);
+}
+
+.prose .code-frame pre::-webkit-scrollbar {
+    height: 0.65rem;
+}
+
+.prose .code-frame pre::-webkit-scrollbar-thumb {
+    border: 0.2rem solid var(--code-bg);
+    border-radius: 999px;
+    background: #6c7086;
+}
+
+.prose table {
+    width: 100%;
+    margin: 1.75rem 0;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+    font-family: var(--font-content);
+}
+
+.prose th,
+.prose td {
+    padding: 0.6rem 0.85rem;
+    border: 1px solid var(--border);
+    text-align: left;
+}
+
+.prose th {
+    background: var(--surface-2);
+    font-weight: 600;
+}
+
+.prose img {
+    border-radius: var(--radius-md);
+    margin: 2rem 0;
+    box-shadow: var(--shadow-xs);
+}
+
+/* Related / about / 404 */
+
+.related {
+    max-width: var(--maxw-prose);
+    margin: 4rem auto 0;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.related-title {
+    font-family: var(--font-content);
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--text-strong);
+    margin: 0 0 0.5rem;
+}
+
+.about-page .prose {
+    font-size: 1rem;
+}
+
+.notfound {
+    display: grid;
+    place-items: center;
+    min-height: 62vh;
+    text-align: center;
+}
+
+.notfound-code {
+    font-family: var(--font-mono);
+    font-size: clamp(3.5rem, 12vw, 6.5rem);
+    font-weight: 600;
+    line-height: 1;
+    margin: 0;
+    color: var(--text-strong);
+}
+
+.notfound-code::after {
+    content: " // not found";
+    font-size: 0.35em;
+    color: var(--text-muted);
+}
+
+.notfound-title {
+    font-family: var(--font-content);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 1.2rem 0 0.5rem;
+    color: var(--text-strong);
+}
+
+.notfound-sub {
+    color: var(--text-muted);
+    margin: 0 0 2.2rem;
+}
+
+.btn-primary {
+    display: inline-block;
+    padding: 0.6rem 1.2rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-strong);
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+    transition: background-color 0.2s ease, color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: var(--text-strong);
+    color: var(--bg);
+    border-color: var(--text-strong);
+}
+
+/* Footer - quiet, hairline, mono */
+
+.site-footer {
+    margin-top: 4rem;
+    border-top: 1px solid var(--border);
+}
+
+.footer-inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    align-items: center;
+    justify-content: space-between;
+    padding-block: 1.75rem;
+}
+
+.footer-copy {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.footer-copy .rust-logo {
+    color: var(--accent-text);
+}
+
+.footer-links {
+    display: flex;
+    gap: 1.3rem;
+}
+
+.footer-links a {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+    color: var(--accent-text);
+}
+
+/* Responsive */
+
+@media (max-width: 640px) {
+    .footer-inner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .post-row-title {
+        font-size: 1.3rem;
+    }
+    .nav-links .nav-link {
+        padding: 0.35rem 0.5rem;
+        font-size: 0.84rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+}

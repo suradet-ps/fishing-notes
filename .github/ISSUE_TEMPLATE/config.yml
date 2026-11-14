@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: คู่มือการใช้งาน
+    url: https://github.com/suradet-ps/fishing-notes/blob/main/README.md
+    about: วิธี build ด้วย Trunk โครงสร้างเนื้อหา และการ deploy ขึ้น GitHub Pages

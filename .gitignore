@@ -1,0 +1,13 @@
+/target
+
+# Build output
+/dist
+/dist-assets
+/rss.xml
+/sitemap.xml
+/robots.txt
+
+/posts-manifest.json
+
+# Python cache
+__pycache__/

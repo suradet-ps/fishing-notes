@@ -1,0 +1,92 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Minimal default token; deploy job escalates to the write scopes it needs.
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@f8be11a05b1d4f3fcebe6410cc16743212b999b0 # 1.98.0
+        # Channel, targets, and components are pinned via rust-toolchain.toml
+        # so CI and local builds use the exact same toolchain.
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --target wasm32-unknown-unknown -- -D warnings
+
+      - name: Test
+        run: cargo test --workspace
+
+      - name: Install cargo-audit + cargo-deny
+        uses: taiki-e/install-action@742a3317eac7bd62f91cd888b4eead5e784ba833 # v2.87.1
+        with:
+          tool: cargo-audit, cargo-deny
+
+      - name: Audit dependencies (RustSec advisory DB)
+        run: cargo audit
+
+      - name: Deny check (advisories, licenses, bans)
+        run: cargo deny check
+
+      - name: Install Trunk
+        uses: jetli/trunk-action@1346cc09eace4beb84e403e199a471346d4684c9 # v0.5.1
+        with:
+          version: "v0.21.14"
+
+      - name: Build (release)
+        # public-url is "/" for GitHub Pages org/user sites, or "/<repo>/" for project sites.
+        run: trunk build --release --public-url /fishing-notes/
+
+      - name: Generate static per-post pages
+        # Emit dist/post/<slug>/index.html for each post (from the built
+        # index.html + the same Rust content loader the app uses) so
+        # /post/<slug> is a real 200 page with per-post Open Graph tags
+        # instead of the 404.html fallback.
+        run: cargo run --quiet --bin post_build
+
+      - name: Prepare SPA fallback (404.html)
+        # Serve the app shell for unknown paths so client-side routing works.
+        run: cp dist/index.html dist/404.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write # Publish the built site to the Pages environment.
+      id-token: write # Mint the OIDC token required by actions/deploy-pages.
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0

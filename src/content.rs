@@ -1,0 +1,134 @@
+use crate::frontmatter::{self, Frontmatter, Slug};
+use crate::markdown;
+use include_dir::{Dir, File, include_dir};
+
+/// Embedded posts directory. Drop a new `content/posts/<slug>.md` file in and
+/// it is picked up automatically at compile time - no code changes required.
+///
+/// Only `posts/` is embedded: `content/assets/**` is fingerprinted into
+/// `dist/assets/` by `build.rs` (see `src/assets.rs`) and must never inflate
+/// the WASM binary.
+static POSTS_DIR: Dir = include_dir!("content/posts");
+
+/// A fully processed blog post, ready to render.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Post {
+  pub slug: Slug,
+  pub meta: Frontmatter,
+  /// Raw markdown body (kept for RSS / future use).
+  pub body: String,
+  /// Rendered HTML body.
+  pub html: String,
+  /// Estimated reading time in minutes.
+  pub reading_time: usize,
+}
+
+/// Load, parse and sort every published post from the embedded content tree.
+pub fn load_posts() -> Vec<Post> {
+  let mut posts = Vec::new();
+
+  // include_dir's `files()` is non-recursive, so collect every file in the
+  // tree (including nested category directories) first.
+  let mut files = Vec::new();
+  collect_files(&POSTS_DIR, &mut files);
+
+  for file in files {
+    let path = file.path();
+    let is_markdown = path
+      .extension()
+      .and_then(|e| e.to_str())
+      .map(|e| e.eq_ignore_ascii_case("md"))
+      .unwrap_or(false);
+
+    if is_markdown
+      && let Some(raw) = file.contents_utf8()
+      && let Some(post) = parse_post(raw, path)
+      && !post.meta.draft
+    {
+      posts.push(post);
+    }
+  }
+
+  posts.sort_by(|a, b| b.meta.date.cmp(&a.meta.date));
+  posts
+}
+
+/// Recursively gather every file beneath a directory.
+fn collect_files(dir: &Dir<'static>, out: &mut Vec<&File<'static>>) {
+  for file in dir.files() {
+    out.push(file);
+  }
+  for sub in dir.dirs() {
+    collect_files(sub, out);
+  }
+}
+
+/// Parse a single markdown file into a [`Post`].
+///
+/// Uses the shared [`frontmatter::parse`] so the in-app render and the RSS
+/// feed (built in `build.rs`) can never disagree about a post. Errors cannot
+/// reach runtime: `build.rs` already fails the build on any malformed post.
+fn parse_post(raw: &str, path: &std::path::Path) -> Option<Post> {
+  let parsed = frontmatter::parse(raw).ok()?;
+
+  let stem = path.file_stem().map(|s| s.to_string_lossy());
+  let slug = frontmatter::derive_slug(&parsed.meta, stem.as_deref()).ok()?;
+
+  let html = markdown::render(&parsed.body);
+  // Thai does not use spaces between words, so count non-whitespace characters
+  // and use a comfortable ~450 characters per minute for the reading estimate.
+  let chars = parsed.body.chars().filter(|c| !c.is_whitespace()).count();
+  let reading_time = ((chars as f64 / 450.0).ceil() as usize).max(1);
+
+  Some(Post {
+    slug,
+    meta: parsed.meta,
+    body: parsed.body,
+    html,
+    reading_time,
+  })
+}
+
+/// Collect the unique, sorted list of tags across all posts.
+pub fn all_tags(posts: &[Post]) -> Vec<String> {
+  let mut tags: Vec<String> = posts
+    .iter()
+    .flat_map(|p| p.meta.tags.iter().cloned())
+    .collect::<std::collections::BTreeSet<_>>()
+    .into_iter()
+    .collect();
+  tags.sort();
+  tags
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn loads_embedded_posts() {
+    let posts = load_posts();
+    assert!(
+      posts.len() >= 2,
+      "expected at least 2 embedded posts, found {}",
+      posts.len()
+    );
+    assert!(posts.iter().any(|p| p.slug == "seabass-bachi-nuke"));
+    assert!(posts.iter().any(|p| p.slug == "sinking-pencil"));
+    // newest first
+    assert!(posts[0].meta.date >= posts[1].meta.date);
+  }
+
+  #[test]
+  fn embedded_slugs_are_unique() {
+    let posts = load_posts();
+    let mut seen = std::collections::HashSet::new();
+    for post in &posts {
+      assert!(
+        seen.insert(post.slug.as_str()),
+        "duplicate post slug `{}` - two posts would overwrite the same dist/post/<slug>/ page",
+        post.slug
+      );
+    }
+  }
+}

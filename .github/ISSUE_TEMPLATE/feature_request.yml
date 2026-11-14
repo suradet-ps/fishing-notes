@@ -1,0 +1,45 @@
+name: Feature request
+description: Suggest an idea or improvement
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ขอบคุณสำหรับไอเดียครับ กรุณาอธิบายปัญหาก่อนวิธีแก้
+
+        Fishing Notes ตั้งใจให้เป็นบล็อก static ที่เขียนบทความด้วย Markdown
+        ถ้าไอเดียต้องเพิ่มฐานข้อมูล ระบบสมาชิก หรือ CMS อาจไม่เข้ากับโครงนี้
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is hard, missing, or slow today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Project constraints
+      description: Fishing Notes is a static, zero-server site on purpose. If a box cannot be checked, the idea breaks the product's shape - start a discussion instead.
+      options:
+        - label: This keeps Fishing Notes a static, zero-server site (no backend, accounts, or CMS).
+          required: true
+        - label: This adds no third-party runtime JavaScript or network requests.
+          required: true
+        - label: This adds no telemetry or analytics on reader behavior.
+          required: true
+        - label: This keeps a post a plain markdown file in `content/posts/` (no per-post code).
+          required: true
