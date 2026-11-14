@@ -1,4 +1,5 @@
-//! Emit one static `dist/post/<slug>/index.html` per published post.
+//! Emit one static `dist/post/<slug>/index.html` per published post, plus
+//! `dist/about/index.html`.
 //!
 //! GitHub Pages (and Facebook's crawler) only serve files that physically
 //! exist, so a history-mode SPA route like `/post/<slug>` would otherwise hit
@@ -25,21 +26,43 @@ fn main() {
 
   for post in load_posts() {
     let url = format!("{}/post/{}", site::SITE_URL, post.slug);
-    let page = render(&template, &post.meta.title, &post.meta.description, &url);
+    let page = render(
+      &template,
+      &post.meta.title,
+      &post.meta.description,
+      &url,
+      "article",
+    );
     let dir = Path::new("dist").join("post").join(post.slug.as_str());
     fs::create_dir_all(&dir).unwrap_or_else(|e| panic!("cannot create {}: {e}", dir.display()));
     let path = dir.join("index.html");
     fs::write(&path, page).unwrap_or_else(|e| panic!("cannot write {}: {e}", path.display()));
     println!("post_build: wrote {}", path.display());
   }
+
+  write_about(&template);
 }
 
-fn render(template: &str, title: &str, description: &str, url: &str) -> String {
+/// Emit a real 200 page for `/about` so crawlers and share cards do not see
+/// the SPA 404 fallback (the sitemap already lists this URL).
+fn write_about(template: &str) {
+  let description = "Fishing Notes คือบันทึกการตกปลาเหยื่อปลอมจากคลิปโปรญี่ปุ่น \
+                      ครอบคลุมซีบาส แบส อีจิ้ง และเท็นยะ ตั้งแต่พื้นฐานจนถึงเทคนิคหน้างาน";
+  let url = format!("{}/about", site::SITE_URL);
+  let page = render(template, "เกี่ยวกับ", description, &url, "website");
+  let dir = Path::new("dist").join("about");
+  fs::create_dir_all(&dir).unwrap_or_else(|e| panic!("cannot create {}: {e}", dir.display()));
+  let path = dir.join("index.html");
+  fs::write(&path, page).unwrap_or_else(|e| panic!("cannot write {}: {e}", path.display()));
+  println!("post_build: wrote {}", path.display());
+}
+
+fn render(template: &str, title: &str, description: &str, url: &str, og_type: &str) -> String {
   let mut out = set_title(template, title);
   out = set_meta(&out, "name", "description", description);
   out = set_meta(&out, "property", "og:title", title);
   out = set_meta(&out, "property", "og:description", description);
-  out = set_meta(&out, "property", "og:type", "article");
+  out = set_meta(&out, "property", "og:type", og_type);
   out = set_meta(&out, "property", "og:url", url);
   out = set_meta(&out, "name", "twitter:title", title);
   out = set_meta(&out, "name", "twitter:description", description);

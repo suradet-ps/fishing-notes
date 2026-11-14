@@ -143,6 +143,7 @@ jobs:
           test -f dist/sitemap.xml
           test -f dist/robots.txt
           test -d dist/post
+          test -f dist/about/index.html
 
   workflows:
     name: Workflow audit
