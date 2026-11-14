@@ -89,7 +89,7 @@ pub fn Post() -> impl IntoView {
 
                           <article class="article" lang=lang.code()>
                               <header class="article-header">
-                                  <leptos_router::components::A href="/">
+                                  <leptos_router::components::A href=crate::util::href("/")>
                                       <span class="back-link">"← กลับไปหน้าบทความ"</span>
                                   </leptos_router::components::A>
                                   <div class="article-tags">

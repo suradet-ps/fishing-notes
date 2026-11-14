@@ -74,20 +74,20 @@ pub fn Nav() -> impl IntoView {
       <header class="site-header">
           <a class="skip-link" href="#main">"Skip to content"</a>
           <div class="container nav-inner">
-              <A href="/">
+              <A href=crate::util::href("/")>
                   <span class="brand">
                       <span class="brand-mark"><FishMark/></span>
                       <span class="brand-name">{site::TITLE}</span>
                   </span>
               </A>
               <nav class="nav-links" aria-label="หลัก">
-                  <A href="/">
+                  <A href=crate::util::href("/")>
                       <span class="nav-link">"บทความ"</span>
                   </A>
-                  <A href="/about">
+                  <A href=crate::util::href("/about")>
                       <span class="nav-link">"เกี่ยวกับ"</span>
                   </A>
-                  <a href=format!("{}/rss.xml", crate::util::detect_base()) target="_blank" rel="noreferrer">
+                  <a href=crate::util::href("/rss.xml") target="_blank" rel="noreferrer">
                       <span class="nav-link">"RSS"</span>
                   </a>
                   <ThemeToggle/>
@@ -113,10 +113,10 @@ pub fn Footer() -> impl IntoView {
                     <a href=site::GITHUB_URL target="_blank" rel="noreferrer">
                         "GitHub"
                     </a>
-                    <A href="/about">
+                    <A href=crate::util::href("/about")>
                         <span class="footer-link">"เกี่ยวกับ"</span>
                     </A>
-                    <a href=format!("{}/rss.xml", crate::util::detect_base()) target="_blank" rel="noreferrer">
+                    <a href=crate::util::href("/rss.xml") target="_blank" rel="noreferrer">
                         "RSS"
                     </a>
                 </div>
@@ -172,7 +172,7 @@ pub fn PostCard(post: Post) -> impl IntoView {
   let description = post_card_description(&post.meta.description);
   let lang = post.meta.lang;
   view! {
-    <A href=format!("/post/{}", post.slug)>
+    <A href=crate::util::href(&format!("/post/{}", post.slug))>
         <article class="post-row">
             <div class="post-row-meta">
                 <LangBadge lang=lang/>

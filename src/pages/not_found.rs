@@ -16,7 +16,7 @@ pub fn NotFound() -> impl IntoView {
               <p class="notfound-sub">
                   "บทความอาจถูกย้าย หรือลิงก์อาจไม่ถูกต้อง"
               </p>
-              <A href="/">
+              <A href=crate::util::href("/")>
                   <span class="btn-primary">"← กลับไปหน้าบทความ"</span>
               </A>
           </div>

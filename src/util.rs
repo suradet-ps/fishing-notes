@@ -15,6 +15,21 @@ pub fn detect_base() -> String {
   }
 }
 
+/// Prefix an app-internal path with the router base.
+///
+/// `leptos_router`'s `<A>` leaves absolute hrefs untouched, so links must
+/// already include the base for GitHub Pages project sites. The click handler
+/// also ignores anchors outside the base path, which otherwise causes a full
+/// page load at the domain root and a 404.
+pub fn href(path: &str) -> String {
+  let base = detect_base();
+  if base.is_empty() {
+    path.to_string()
+  } else {
+    format!("{base}{path}")
+  }
+}
+
 fn local_storage() -> Option<Storage> {
   window()?.local_storage().ok().flatten()
 }
