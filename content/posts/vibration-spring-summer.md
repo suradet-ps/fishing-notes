@@ -96,7 +96,7 @@ lang: th
 
 ---
 
-## 3. ท่าเรือและอ่าว: สนามของ metal vibration
+## 3. ท่าเรือและอ่าว: หมายของ metal vibration
 
 ### 3.1 ทำไมต้อง metal
 
@@ -239,7 +239,7 @@ lang: th
 
 ---
 
-## 6. คลองและร่องน้ำ: สนามของ resin vibration
+## 6. คลองและร่องน้ำ: หมายของ resin vibration
 
 ### 6.1 ทำไมต้อง resin
 
