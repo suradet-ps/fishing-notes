@@ -38,7 +38,12 @@ pub fn Post() -> impl IntoView {
   });
 
   // Rendered post HTML, reactive so live demos can be mounted when it changes.
-  let html = Memo::new(move |_| data.get().map(|(p, _)| p.html).unwrap_or_default());
+  let html = Memo::new(move |_| {
+    data
+      .get()
+      .map(|(p, _)| crate::util::prefix_asset_urls(&p.html))
+      .unwrap_or_default()
+  });
 
   // After the post HTML is injected, mount any live demos it references.
   // We defer a frame and query the document so we never race the `inner_html`

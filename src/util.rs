@@ -30,6 +30,22 @@ pub fn href(path: &str) -> String {
   }
 }
 
+/// Prefix fingerprinted content-asset URLs in rendered post HTML with the
+/// GitHub Pages base path.
+///
+/// Markdown images are rewritten at build time to `/assets/<hashed-name>`.
+/// That works at the domain root, but a project site is served from
+/// `/fishing-notes/`, so the browser would request `/assets/...` and get a 404.
+/// Only rewrite signed asset URLs; external images and unrelated markup are
+/// left untouched.
+pub fn prefix_asset_urls(html: &str) -> String {
+  let base = detect_base();
+  if base.is_empty() {
+    return html.to_string();
+  }
+  html.replace("src=\"/assets/", &format!("src=\"{base}/assets/"))
+}
+
 fn local_storage() -> Option<Storage> {
   window()?.local_storage().ok().flatten()
 }
