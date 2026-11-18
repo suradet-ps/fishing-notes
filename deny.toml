@@ -18,6 +18,11 @@ ignore = [
   # futures-util (via leptos) still depends on pin-utils 0.1.0, which is the
   # latest published version. Unmaintained only; no known vulnerability.
   { id = "RUSTSEC-2026-0441", reason = "pin-utils 0.1.0 is the latest version; unmaintained transitive dep of futures-util used by leptos" },
+  # rss -> atom_syndication / diligent-date-parser still use chrono 0.4.45,
+  # which is the latest published version. Unmaintained only; build-time RSS
+  # generation, not shipped in the WASM binary, and no maintained replacement
+  # is accepted by the current rss stack.
+  { id = "RUSTSEC-2026-0543", reason = "chrono 0.4.45 is the latest version; unmaintained build-time dep of rss/atom_syndication, not shipped in the WASM binary" },
 ]
 
 [licenses]
