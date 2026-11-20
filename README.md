@@ -81,6 +81,25 @@ the script when you want a curated frame. When the cover is the first body
 image, the renderer moves it out of the prose and into the article header, so
 the same still never appears twice.
 
+### Inline video clips
+
+Short technique clips can be embedded with a fenced `video` block:
+
+````markdown
+```video
+src: assets/clip.mp4
+poster: assets/clip-poster.jpg
+title: Two-finger grip
+caption: The index and middle fingers pinch the reel seat.
+muted: true
+```
+````
+
+The renderer emits a native `<video controls playsinline preload="metadata">`
+figure; `src` and `poster` are validated against `content/assets/` at build
+time. Keep clips short, use a poster still that is different from the nearby
+article image, and leave `muted: true` unless the audio is essential.
+
 ## Project layout
 
 ```text
@@ -92,7 +111,8 @@ scripts/          # Cover and OG image generators (Pillow)
 src/
   content.rs      # Loads posts, picks covers, builds the TOC
   frontmatter.rs  # Frontmatter parser + validation
-  markdown.rs     # Markdown -> HTML, captions, heading anchors
+  markdown.rs     # Markdown -> HTML, captions, heading anchors, video blocks
+  video.rs        # Parse and validate inline video directives
   pages/          # Home / About / Post / 404
   components.rs   # Nav, Footer, cards, theme toggle
 styles/

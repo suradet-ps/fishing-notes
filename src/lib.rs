@@ -11,4 +11,5 @@ pub mod fingerprint;
 pub mod frontmatter;
 pub mod markdown;
 pub mod site;
+pub mod video;
 pub mod xml;

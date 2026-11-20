@@ -164,7 +164,9 @@ pub fn prefix_asset_urls(html: &str) -> String {
   if base.is_empty() {
     return html.to_string();
   }
-  html.replace("src=\"/assets/", &format!("src=\"{base}/assets/"))
+  html
+    .replace("src=\"/assets/", &format!("src=\"{base}/assets/"))
+    .replace("poster=\"/assets/", &format!("poster=\"{base}/assets/"))
 }
 
 fn local_storage() -> Option<Storage> {

@@ -12,6 +12,9 @@ mod site;
 #[path = "src/xml.rs"]
 mod xml;
 
+#[path = "src/video.rs"]
+mod video;
+
 use std::collections::{BTreeMap, HashMap};
 use std::env;
 use std::fs;
@@ -55,7 +58,11 @@ fn main() {
     }
     // A markdown image that points into `content/assets/` but has no file to
     // resolve to would ship a broken image; fail the build loudly instead.
-    for reference in fingerprint::asset_references(&parsed.body) {
+    let mut references = fingerprint::asset_references(&parsed.body);
+    references.extend(video::asset_references(&parsed.body));
+    references.sort();
+    references.dedup();
+    for reference in references {
       if !assets.contains_key(&reference) {
         panic!(
           "{} references missing content asset `{reference}`: expected content/{reference}",

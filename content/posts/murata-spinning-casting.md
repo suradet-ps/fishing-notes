@@ -88,6 +88,14 @@ spinning ไม่มีระบบเบรกแบบ baitcasting
 
 **ภาพที่ 3:** ตัวอย่างการจับสามนิ้วที่นิ้วไปชนลูกกลิ้งเก็บสาย ทำให้สายเสียหายได้
 
+```video
+src: assets/murata-spin-clip-grip.mp4
+poster: assets/murata-spin-clip-grip-poster.jpg
+title: การจับรอก spinning ด้วยสองนิ้ว
+caption: การจับรอกสองนิ้วจากคลิป — ใช้นิ้วกลางและนิ้วนางประกบรอก เหลือนิ้วสำหรับควบคุมสาย
+muted: true
+```
+
 ---
 
 ## 3. 1-2-3: เก็บสายโดยไม่ต้องคว้า
@@ -126,6 +134,14 @@ spinning ไม่มีระบบเบรกแบบ baitcasting
 
 **ภาพที่ 4:** การหมุนรอกเพื่อนำลูกกลิ้งเก็บสายขึ้นมาด้านบน ก่อนจับสายและพลิกเบลด้วยจังหวะ 1-2-3
 
+```video
+src: assets/murata-spin-clip-bail.mp4
+poster: assets/murata-spin-clip-bail-poster.jpg
+title: จังหวะ 1-2-3 ในการเก็บสาย
+caption: จังหวะ 1-2-3 จากคลิป — STEP 1 ยก Line Roller ขึ้นบน, STEP 2 ใช้นิ้วจับสาย, STEP 3 พลิกเบลกลับ
+muted: true
+```
+
 ---
 
 ## 4. การตี: โยนกลับหลัง ไม่ใช่ยกขึ้น
@@ -162,6 +178,14 @@ spinning ไม่มีระบบเบรกแบบ baitcasting
 
 **ภาพที่ 5:** การตี overhead ที่ใช้การโก่งตัวของคันมากกว่าการยกแขนขึ้นฟ้า
 
+```video
+src: assets/murata-spin-clip-overhead.mp4
+poster: assets/murata-spin-clip-overhead-poster.jpg
+title: การตี overhead ด้วยการโก่งคัน
+caption: การตี overhead จากคลิป — เงื้อคันไปด้านหลัง หยุดมือ แล้วปล่อยให้คันดีดเหยื่อออกไป
+muted: true
+```
+
 ---
 
 ## 5. เบรกด้วยนิ้ว
@@ -187,6 +211,14 @@ spinning ไม่มีเบรกแบบ baitcasting
 ![การใช้นิ้วแตะสปูลเพื่อเบรกสาย](assets/murata-spin-brake.jpg)
 
 **ภาพที่ 6:** การใช้ปลายนิ้วแตะสปูลเพื่อเบรกสายและควบคุมระยะตก
+
+```video
+src: assets/murata-spin-clip-brake.mp4
+poster: assets/murata-spin-clip-brake-poster.jpg
+title: การเบรกสายด้วยปลายนิ้ว
+caption: การเบรกด้วยนิ้วจากคลิป — แตะสปูลเบา ๆ เพื่อชะลอสายและหยุดเหยื่อให้ลงจุด
+muted: true
+```
 
 ---
 

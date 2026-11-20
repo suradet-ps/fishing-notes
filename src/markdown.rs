@@ -5,6 +5,8 @@ use syntect::highlighting::ThemeSet;
 use syntect::html::highlighted_html_for_string;
 use syntect::parsing::SyntaxSet;
 
+use crate::video;
+
 /// Embedded syntax definitions (fancy-regex backend, wasm32-safe).
 ///
 /// TOML is not part of syntect's default set, so the official Sublime Text
@@ -115,7 +117,14 @@ fn render_body(md: &str) -> String {
         }
         j += 1;
       }
-      if lang == "demo" {
+      if lang == "video" {
+        if let Some(directive) = video::Directive::parse(&code) {
+          events[i] = Event::Html(pulldown_cmark::CowStr::Boxed(
+            video_player(&directive).into_boxed_str(),
+          ));
+          events.drain((i + 1)..=j.min(events.len() - 1));
+        }
+      } else if lang == "demo" {
         // Emit a mount point that the post page turns into a live component.
         let name = code
           .trim()
@@ -299,6 +308,54 @@ fn code_frame(lang: &str, title: Option<&str>, highlighted: &str) -> String {
   out.push_str(highlighted);
   out.push_str("</code></pre></figure>");
   out
+}
+
+/// Render a `video` directive as a native inline player. The clip and poster
+/// are resolved through the fingerprinted asset manifest; the build validates
+/// that both files exist before this runs in the browser.
+fn video_player(directive: &video::Directive) -> String {
+  let src = crate::assets::resolve(&directive.src).unwrap_or(directive.src.as_str());
+  let poster = directive.poster.as_deref().and_then(crate::assets::resolve);
+  let poster_attr = poster
+    .map(|url| format!(" poster=\"{}\"", escape_html(url)))
+    .unwrap_or_default();
+  let muted_attr = if directive.muted { " muted" } else { "" };
+  let mime = if src.ends_with(".webm") {
+    "video/webm"
+  } else {
+    "video/mp4"
+  };
+  let label = directive
+    .title
+    .as_deref()
+    .or(directive.caption.as_deref())
+    .unwrap_or("คลิปวิดีโอสาธิต");
+  let caption_text = directive
+    .caption
+    .as_deref()
+    .map(str::trim)
+    .filter(|caption| !caption.is_empty())
+    .unwrap_or_default();
+  let caption = format!(
+    "<figcaption class=\"video-caption\"><span class=\"video-kicker\">คลิปสั้น</span> {}</figcaption>",
+    escape_html(caption_text)
+  );
+
+  format!(
+    concat!(
+      "<figure class=\"video-frame\"><div class=\"video-frame-media\">",
+      "<video controls playsinline preload=\"metadata\"{}{} aria-label=\"{}\">",
+      "<source src=\"{}\" type=\"{}\"/>",
+      "เบราว์เซอร์ของคุณไม่รองรับการเล่นวิดีโอ",
+      "</video></div>{}</figure>"
+    ),
+    poster_attr,
+    muted_attr,
+    escape_html(label),
+    escape_html(src),
+    mime,
+    caption,
+  )
 }
 
 /// Extract an optional `title="..."` from a fence info string (single quotes
@@ -587,5 +644,30 @@ mod tests {
       ))
     );
     assert_eq!(first_image("no images here"), None);
+  }
+
+  #[test]
+  fn video_directive_renders_a_native_player_with_resolved_assets() {
+    let md = concat!(
+      "```video\n",
+      "src: assets/fishing-mark.svg\n",
+      "poster: assets/fishing-mark.svg\n",
+      "title: คลิปทดสอบ\n",
+      "caption: คำอธิบายคลิป\n",
+      "muted: true\n",
+      "```"
+    );
+    let html = render(md);
+    let src = crate::assets::resolve("assets/fishing-mark.svg").expect("sample asset");
+    assert!(html.contains("class=\"video-frame\""), "{html}");
+    assert!(
+      html.contains("<video controls playsinline preload=\"metadata\""),
+      "{html}"
+    );
+    assert!(html.contains(" muted"), "{html}");
+    assert!(html.contains(&format!("src=\"{src}\"")), "{html}");
+    assert!(html.contains(&format!("poster=\"{src}\"")), "{html}");
+    assert!(html.contains("class=\"video-caption\""), "{html}");
+    assert!(!html.contains("code-plate"), "{html}");
   }
 }
