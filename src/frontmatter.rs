@@ -50,6 +50,10 @@ pub struct Frontmatter {
   pub description: String,
   pub tags: Vec<String>,
   pub author: Option<String>,
+  /// Optional cover image reference (`assets/<name>.jpg`). When absent, the
+  /// loader looks for `assets/<slug>-cover.jpg`, then the first image in the
+  /// body.
+  pub cover: Option<String>,
   /// Content language; defaults to Thai when the frontmatter omits `lang`.
   pub lang: Lang,
   pub draft: bool,
@@ -223,6 +227,8 @@ struct Raw {
   #[serde(default)]
   author: Option<String>,
   #[serde(default)]
+  cover: Option<String>,
+  #[serde(default)]
   lang: Option<String>,
   #[serde(default)]
   draft: bool,
@@ -288,6 +294,7 @@ pub fn parse(raw: &str) -> Result<Parsed, FrontmatterError> {
       description: raw_meta.description,
       tags,
       author: raw_meta.author,
+      cover: raw_meta.cover,
       lang,
       draft: raw_meta.draft,
       slug,
@@ -587,6 +594,16 @@ mod tests {
   }
 
   #[test]
+  fn cover_reference_survives_parse() {
+    let raw =
+      "---\ntitle: \"Hello\"\ndate: \"2026-08-29\"\ncover: \"assets/hello-cover.jpg\"\n---\nBody";
+    assert_eq!(
+      parse(raw).unwrap().meta.cover.as_deref(),
+      Some("assets/hello-cover.jpg")
+    );
+  }
+
+  #[test]
   fn unknown_keys_are_reported_as_warnings() {
     let raw = "---\ntitle: \"Hello\"\ndate: \"2026-08-29\"\ncatagories: [oops]\n---\nBody";
     let parsed = parse(raw).unwrap();
@@ -652,6 +669,7 @@ mod tests {
       description: "A description".to_string(),
       tags: tags.iter().map(|t| t.to_string()).collect(),
       author: None,
+      cover: None,
       lang: Lang::Th,
       draft,
       slug: None,

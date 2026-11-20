@@ -38,6 +38,12 @@ Regenerate the OG image (requires Pillow):
 python scripts/render-og-image.py
 ```
 
+Regenerate the article covers from their source frames (requires Pillow):
+
+```bash
+python scripts/make-covers.py
+```
+
 ## Writing a post
 
 Create a `.md` file in `content/posts/` with frontmatter:
@@ -50,6 +56,7 @@ description: "One or two sentence summary"
 tags: ["seabass", "lures", "beginner"]
 author: "suradet-ps"
 lang: th
+# cover: "assets/my-cover.jpg"   # optional
 ---
 
 Markdown content...
@@ -60,18 +67,34 @@ Markdown content...
 - Put images in `content/assets/` and reference them as `![alt](assets/name.png)`
 - Tables, task lists, and footnotes are supported via GitHub-flavored Markdown
 
+### Covers
+
+A post's cover, in priority order, is:
+
+1. the `cover:` frontmatter reference, when present;
+2. `content/assets/<slug>-cover.jpg`, if that file exists;
+3. the first Markdown image in the body.
+
+Generated covers are 21:9 cinematic crops with a shared, light grade. The
+source-frame map lives in `scripts/make-covers.py`; add a slug there and rerun
+the script when you want a curated frame. When the cover is the first body
+image, the renderer moves it out of the prose and into the article header, so
+the same still never appears twice.
+
 ## Project layout
 
 ```text
 content/
   posts/          # Markdown articles
-  assets/         # Images and supporting files
+  assets/         # Images, generated covers, supporting files
+fonts/            # Self-hosted IBM Plex Sans Thai + Mono (SIL OFL)
+scripts/          # Cover and OG image generators (Pillow)
 src/
-  content.rs      # Loads and renders posts
+  content.rs      # Loads posts, picks covers, builds the TOC
   frontmatter.rs  # Frontmatter parser + validation
-  markdown.rs     # Markdown -> HTML + code highlighting
+  markdown.rs     # Markdown -> HTML, captions, heading anchors
   pages/          # Home / About / Post / 404
-  components.rs   # Nav, Footer, PostCard, ThemeToggle
+  components.rs   # Nav, Footer, cards, theme toggle
 styles/
   main.css        # Design system (light/dark)
 build.rs          # RSS, sitemap, robots, asset fingerprinting
@@ -108,3 +131,6 @@ translation from auto-generated captions.
 ## License
 
 MIT - see [LICENSE](LICENSE).
+
+The IBM Plex fonts in `fonts/` are licensed under the SIL Open Font License;
+see `fonts/OFL.txt`.

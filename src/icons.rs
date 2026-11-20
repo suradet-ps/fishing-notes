@@ -23,6 +23,26 @@ pub fn FishMark() -> impl IntoView {
 }
 
 #[component]
+pub fn ArrowIcon() -> impl IntoView {
+  view! {
+      <svg
+          viewBox="0 0 24 24"
+          width="1em"
+          height="1em"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+      >
+          <path d="M4 12h15"/>
+          <path d="m13 6 6 6-6 6"/>
+      </svg>
+  }
+}
+
+#[component]
 pub fn SearchIcon() -> impl IntoView {
   view! {
       <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

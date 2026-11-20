@@ -26,12 +26,17 @@ fn main() {
 
   for post in load_posts() {
     let url = format!("{}/post/{}", site::SITE_URL, post.slug);
+    let image = post
+      .cover
+      .as_ref()
+      .and_then(|cover| site::share_image_url(&cover.src));
     let page = render(
       &template,
       &post.meta.title,
       &post.meta.description,
       &url,
       "article",
+      image.as_deref(),
     );
     let dir = Path::new("dist").join("post").join(post.slug.as_str());
     fs::create_dir_all(&dir).unwrap_or_else(|e| panic!("cannot create {}: {e}", dir.display()));
@@ -49,7 +54,7 @@ fn write_about(template: &str) {
   let description = "Fishing Notes คือบันทึกการตกปลาเหยื่อปลอมจากคลิปโปรญี่ปุ่น \
                       ครอบคลุมซีบาส แบส อีจิ้ง และเท็นยะ ตั้งแต่พื้นฐานจนถึงเทคนิคหน้างาน";
   let url = format!("{}/about", site::SITE_URL);
-  let page = render(template, "เกี่ยวกับ", description, &url, "website");
+  let page = render(template, "เกี่ยวกับ", description, &url, "website", None);
   let dir = Path::new("dist").join("about");
   fs::create_dir_all(&dir).unwrap_or_else(|e| panic!("cannot create {}: {e}", dir.display()));
   let path = dir.join("index.html");
@@ -57,7 +62,14 @@ fn write_about(template: &str) {
   println!("post_build: wrote {}", path.display());
 }
 
-fn render(template: &str, title: &str, description: &str, url: &str, og_type: &str) -> String {
+fn render(
+  template: &str,
+  title: &str,
+  description: &str,
+  url: &str,
+  og_type: &str,
+  image: Option<&str>,
+) -> String {
   let mut out = set_title(template, title);
   out = set_meta(&out, "name", "description", description);
   out = set_meta(&out, "property", "og:title", title);
@@ -66,6 +78,10 @@ fn render(template: &str, title: &str, description: &str, url: &str, og_type: &s
   out = set_meta(&out, "property", "og:url", url);
   out = set_meta(&out, "name", "twitter:title", title);
   out = set_meta(&out, "name", "twitter:description", description);
+  if let Some(image) = image {
+    out = set_meta(&out, "property", "og:image", image);
+    out = set_meta(&out, "name", "twitter:image", image);
+  }
   out
 }
 

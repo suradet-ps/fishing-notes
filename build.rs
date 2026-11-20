@@ -63,6 +63,17 @@ fn main() {
         );
       }
     }
+    // A frontmatter cover is a first-class image reference too; a typo must
+    // fail the build rather than ship a card with a blank cover.
+    if let Some(cover) = &parsed.meta.cover
+      && let Some(reference) = fingerprint::normalize_ref(cover)
+      && !assets.contains_key(&reference)
+    {
+      panic!(
+        "{} references missing cover asset `{reference}`: expected content/{reference}",
+        path.display()
+      );
+    }
     let stem = path.file_stem().map(|s| s.to_string_lossy());
     // A slug becomes a URL path segment and a directory name, so an unsafe
     // one (absolute, `..`, separators) fails the build instead of escaping

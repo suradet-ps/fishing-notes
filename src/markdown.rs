@@ -45,6 +45,36 @@ fn theme() -> &'static syntect::highlighting::Theme {
 /// badge, and a copy button. Image references into `content/assets/` are
 /// rewritten to their fingerprinted public URLs (see `src/assets.rs`).
 pub fn render(md: &str) -> String {
+  render_document(md).html
+}
+
+/// One table-of-contents entry produced while rendering.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Heading {
+  pub id: String,
+  pub text: String,
+}
+
+/// Rendered article HTML plus the table of contents extracted from its `h2`s.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RenderedDocument {
+  pub html: String,
+  pub headings: Vec<Heading>,
+}
+
+/// Render markdown into HTML and collect section headings for the article's
+/// table of contents. Also adds `id`s to top-level sections, marks figure
+/// captions, and makes content images lazy-loaded.
+pub fn render_document(md: &str) -> RenderedDocument {
+  let html = render_body(md);
+  let (html, headings) = add_heading_ids(&html);
+  RenderedDocument {
+    html: decorate_prose(&html),
+    headings,
+  }
+}
+
+fn render_body(md: &str) -> String {
   let parser = Parser::new_ext(md, Options::all());
   let mut events = parser.collect::<Vec<_>>();
   let mut out = String::with_capacity(md.len() + md.len() / 2);
@@ -110,6 +140,97 @@ pub fn render(md: &str) -> String {
 
   html::push_html(&mut out, events.into_iter());
   out
+}
+
+/// Add stable `section-N` ids to every `h2` and collect their plain-text
+/// labels. The ids are generated after rendering so the markdown source does
+/// not need hand-maintained anchors.
+fn add_heading_ids(html: &str) -> (String, Vec<Heading>) {
+  let mut out = String::with_capacity(html.len() + 128);
+  let mut headings = Vec::new();
+  let mut rest = html;
+  let mut n = 0;
+
+  while let Some(start) = rest.find("<h2>") {
+    out.push_str(&rest[..start]);
+    let after_open = &rest[start + "<h2>".len()..];
+    let Some(end) = after_open.find("</h2>") else {
+      out.push_str(&rest[start..]);
+      return (out, headings);
+    };
+
+    n += 1;
+    let id = format!("section-{n}");
+    let inner = &after_open[..end];
+    headings.push(Heading {
+      id: id.clone(),
+      text: plain_text(inner),
+    });
+
+    out.push_str("<h2 id=\"");
+    out.push_str(&id);
+    out.push_str("\" tabindex=\"-1\">");
+    out.push_str(inner);
+    out.push_str("</h2>");
+    rest = &after_open[end + "</h2>".len()..];
+  }
+
+  out.push_str(rest);
+  (out, headings)
+}
+
+/// Small presentational touches that let the CSS treat generated markup as an
+/// editorial article: captions become a dedicated class and images load
+/// lazily. Both are additive and keep the original text untouched.
+fn decorate_prose(html: &str) -> String {
+  let html = html.replace(
+    "<p><strong>ภาพที่ ",
+    "<p class=\"prose-caption\"><strong>ภาพที่ ",
+  );
+  html.replace("<img ", "<img loading=\"lazy\" decoding=\"async\" ")
+}
+
+/// The first image in a markdown body, as `(destination, alt text)`.
+pub fn first_image(md: &str) -> Option<(String, String)> {
+  let mut parser = Parser::new_ext(md, Options::all());
+  while let Some(event) = parser.next() {
+    if let Event::Start(Tag::Image { dest_url, .. }) = event {
+      let dest = dest_url.to_string();
+      let mut alt = String::new();
+      for nested in parser.by_ref() {
+        match nested {
+          Event::Text(text) | Event::Code(text) => alt.push_str(&text),
+          Event::End(TagEnd::Image) => return Some((dest, alt)),
+          _ => {}
+        }
+      }
+      return Some((dest, alt));
+    }
+  }
+  None
+}
+
+/// Strip inline HTML tags and decode the handful of entities pulldown-cmark
+/// emits, producing a plain-text label suitable for a TOC or an image caption.
+pub fn plain_text(html: &str) -> String {
+  let mut text = String::with_capacity(html.len());
+  let mut in_tag = false;
+  for c in html.chars() {
+    match c {
+      '<' => in_tag = true,
+      '>' if in_tag => in_tag = false,
+      _ if !in_tag => text.push(c),
+      _ => {}
+    }
+  }
+  let text = text
+    .replace("&amp;", "&")
+    .replace("&lt;", "<")
+    .replace("&gt;", ">")
+    .replace("&quot;", "\"")
+    .replace("&#39;", "'")
+    .replace("&apos;", "'");
+  text.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
 /// The first comma/space-separated token of a fence info string that syntect
@@ -378,7 +499,9 @@ mod tests {
     let url = crate::assets::resolve("assets/fishing-mark.svg").expect("sample asset");
     let html = render("![mark](assets/fishing-mark.svg)");
     assert!(
-      html.contains(&format!("<img src=\"{url}\" alt=\"mark\" />")),
+      html.contains(&format!(
+        "<img loading=\"lazy\" decoding=\"async\" src=\"{url}\" alt=\"mark\" />"
+      )),
       "{html}"
     );
   }
@@ -387,7 +510,9 @@ mod tests {
   fn external_images_are_left_alone() {
     let html = render("![remote](https://example.com/photo.png)");
     assert!(
-      html.contains("<img src=\"https://example.com/photo.png\" alt=\"remote\" />"),
+      html.contains(
+        "<img loading=\"lazy\" decoding=\"async\" src=\"https://example.com/photo.png\" alt=\"remote\" />"
+      ),
       "{html}"
     );
   }
@@ -405,5 +530,62 @@ mod tests {
       !html.contains("code-plate"),
       "demo should not be highlighted"
     );
+  }
+
+  #[test]
+  fn headings_gain_stable_ids_and_a_toc() {
+    let md = "## หนึ่ง\n\nText\n\n## สอง\n\nMore";
+    let doc = render_document(md);
+    assert!(
+      doc
+        .html
+        .contains("<h2 id=\"section-1\" tabindex=\"-1\">หนึ่ง</h2>"),
+      "{}",
+      doc.html
+    );
+    assert!(
+      doc
+        .html
+        .contains("<h2 id=\"section-2\" tabindex=\"-1\">สอง</h2>"),
+      "{}",
+      doc.html
+    );
+    assert_eq!(doc.headings.len(), 2);
+    assert_eq!(doc.headings[0].id, "section-1");
+    assert_eq!(doc.headings[0].text, "หนึ่ง");
+    assert_eq!(doc.headings[1].text, "สอง");
+  }
+
+  #[test]
+  fn heading_ids_skip_inline_markup_in_the_label() {
+    let doc = render_document("## ใช้ **เหยื่อ** ตัวเล็ก");
+    assert_eq!(doc.headings[0].text, "ใช้ เหยื่อ ตัวเล็ก");
+    assert!(doc.html.contains("id=\"section-1\""), "{}", doc.html);
+  }
+
+  #[test]
+  fn captions_and_images_get_editorial_classes() {
+    let html = render("![ปลา](assets/fishing-mark.svg)\n\n**ภาพที่ 1:** ปลาตัวแรก");
+    assert!(
+      html.contains("<p class=\"prose-caption\"><strong>ภาพที่ 1:</strong>"),
+      "{html}"
+    );
+    assert!(
+      html.contains("<img loading=\"lazy\" decoding=\"async\""),
+      "{html}"
+    );
+  }
+
+  #[test]
+  fn first_image_returns_destination_and_alt_text() {
+    let md = "Intro\n\n![ปลาตัวแรก](assets/fishing-mark.svg)\n\n![ปลาตัวที่สอง](assets/other.jpg)";
+    assert_eq!(
+      first_image(md),
+      Some((
+        "assets/fishing-mark.svg".to_string(),
+        "ปลาตัวแรก".to_string()
+      ))
+    );
+    assert_eq!(first_image("no images here"), None);
   }
 }
