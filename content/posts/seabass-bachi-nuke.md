@@ -74,6 +74,14 @@ lang: th
 
 **ภาพที่ 2:** ภาพสาธิตจังหวะตีเหนือศีรษะ (overhead cast) ในคลิป
 
+```video
+src: assets/seabass-bachi-clip-overhead.mp4
+poster: assets/seabass-bachi-clip-overhead-poster.jpg
+title: การตี overhead
+caption: ท่า overhead จากคลิป — เงื้อคันไปด้านหลังแล้วปล่อยสายตอนคันอยู่ประมาณ 10–11 นาฬิกา
+muted: true
+```
+
 ถ้าปล่อยเร็วเกินไป เหยื่อจะพุ่งขึ้นฟ้า ถ้าปล่อยช้าเกินไป เหยื่อจะพุ่งลงน้ำ
 
 และเพราะคลิปนี้ใช้สาย PE ซึ่งไม่ยืดหยุ่นเหมือนไนลอน หลังเหยื่อลงน้ำเขาต้องหยุดสายทันทีด้วยมือซ้าย โดยจับสปูลหรือรั้งสายไว้
@@ -91,6 +99,14 @@ lang: th
 ![การตีจากด้านข้างแบบไซด์แฮนด์](assets/seabass-bachi-sidearm.jpg)
 
 **ภาพที่ 3:** ภาพสาธิตท่าตีจากด้านข้าง (sidehand cast) สำหรับจุดที่มีคนหรือสิ่งกีดขวางด้านหลัง
+
+```video
+src: assets/seabass-bachi-clip-sidehand.mp4
+poster: assets/seabass-bachi-clip-sidehand-poster.jpg
+title: การตีไซด์แฮนด์
+caption: ท่าไซด์แฮนด์จากคลิป — ใช้เมื่อมีคนหรือสิ่งกีดขวางด้านหลัง และต้องการตีในมุมแคบ
+muted: true
+```
 
 ---
 
@@ -218,6 +234,14 @@ lang: th
 
 **ภาพที่ 7:** จังหวะสู้ปลาแบบปล่อยให้ drag ทำงานและกรอเก็บสายช้า ๆ
 
+```video
+src: assets/seabass-bachi-clip-fight.mp4
+poster: assets/seabass-bachi-clip-fight-poster.jpg
+title: การสู้ปลา
+caption: การสู้ปลาในคลิป — ปล่อยให้ drag ทำงานเมื่อปลาวิ่ง และกรอเก็บสายช้า ๆ เมื่อปลาวิ่งเข้าหา
+muted: true
+```
+
 พอปลาเริ่มเหนื่อยและลอยขึ้นผิวน้ำ เขาค่อย ๆ นำเข้าฝั่ง
 
 เขาหยิบสวิงขึ้นมาเตรียมไว้ก่อนปลาจะเข้ามาใกล้ แล้วตักโดยให้หัวปลาเข้าปากสวิงก่อน จากนั้นจึงยกสวิงรองรับน้ำหนักปลา
@@ -233,6 +257,14 @@ lang: th
 ![การปล่อยปลากลับน้ำหลังถอดตะขอ](assets/seabass-bachi-release.jpg)
 
 **ภาพที่ 9:** จังหวะปล่อยปลากลับน้ำหลังถอดตะขอ
+
+```video
+src: assets/seabass-bachi-clip-release.mp4
+poster: assets/seabass-bachi-clip-release-poster.jpg
+title: การปล่อยปลา
+caption: การนำปลาขึ้นฝั่ง ถอดตะขอ และปล่อยกลับน้ำจากคลิป — ประคองปลาไว้ในน้ำก่อนปล่อยมือ
+muted: true
+```
 
 ช่วงนั้นทำให้เห็นว่าบาจิ นุเกะไม่ได้สนุกเพราะได้ปลาตัวใหญ่เพียงอย่างเดียว
 
