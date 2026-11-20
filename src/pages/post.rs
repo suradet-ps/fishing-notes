@@ -5,7 +5,7 @@ use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::{JsCast, JsValue};
 use wasm_bindgen_futures::{JsFuture, spawn_local};
 
-use crate::components::{LangBadge, PostCard};
+use crate::components::{PostCard, cover_alt, cover_src, display_title, primary_tag};
 use crate::pages::not_found::NotFound;
 use crate::util::format_date;
 use fishing_notes::content::Post;
@@ -26,12 +26,25 @@ pub fn Post() -> impl IntoView {
       let s = slug();
       posts.iter().position(|p| p.slug.as_str() == s).map(|idx| {
         let current = posts[idx].clone();
-        let related = posts
+        let primary = primary_tag(&current);
+        let mut related = posts
           .iter()
-          .skip(idx + 1)
+          .filter(|p| p.slug != current.slug && p.meta.tags.contains(&primary))
           .take(2)
           .cloned()
           .collect::<Vec<_>>();
+        // Never leave the bottom of a post empty: if the specific topic has no
+        // neighbours, fall back to the next posts in the library (wrapping).
+        if related.len() < 2 {
+          for p in posts.iter().skip(idx + 1).chain(posts.iter().take(idx)) {
+            if related.len() == 2 {
+              break;
+            }
+            if related.iter().all(|r| r.slug.as_str() != p.slug.as_str()) {
+              related.push(p.clone());
+            }
+          }
+        }
         (current, related)
       })
     }
@@ -46,13 +59,12 @@ pub fn Post() -> impl IntoView {
   });
 
   // After the post HTML is injected, mount any live demos it references.
-  // We defer a frame and query the document so we never race the `inner_html`
-  // mutation or the node-ref attachment.
   Effect::new(move |_| {
     let _ = html.get();
     let window = web_sys::window().expect("no window");
     let cb = wasm_bindgen::prelude::Closure::once(Box::new(move |_t: f64| {
       mount_demos();
+      scroll_to_fragment_or_top();
     }) as Box<dyn FnMut(f64)>);
     let _ = window.request_animation_frame(cb.as_ref().unchecked_ref());
     cb.forget();
@@ -61,42 +73,105 @@ pub fn Post() -> impl IntoView {
   let data_for_view = data;
 
   view! {
-      <div class="container post-page">
-          <Show
-              when=move || data.get().is_some()
-              fallback=|| view! { <NotFound/> }
-          >
-              {move || {
-                  data_for_view.get().map(|(p, related)| {
-                      let title = p.meta.title.clone();
-                      let desc = if p.meta.description.is_empty() {
-                          site::DESCRIPTION.to_string()
+      <Show
+          when=move || data.get().is_some()
+          fallback=|| view! { <NotFound/> }
+      >
+          {move || {
+              data_for_view.get().map(|(p, related)| {
+                  let title = p.meta.title.clone();
+                  let heading = display_title(&p.meta.title);
+                  let desc = if p.meta.description.is_empty() {
+                      site::DESCRIPTION.to_string()
+                  } else {
+                      p.meta.description.clone()
+                  };
+                  let deck = display_title(&desc);
+                  let author = p
+                      .meta
+                      .author
+                      .clone()
+                      .unwrap_or_else(|| site::AUTHOR.to_string());
+                  let tags = p.meta.tags.clone();
+                  let tag = primary_tag(&p);
+                  let date = format_date(&p.meta.date);
+                  let lang = p.meta.lang;
+                  let reading = p.reading_time;
+                  let section_count = p.headings.len();
+                  let has_toc = section_count > 1;
+                  let toc = p.headings.clone();
+                  let cover = cover_src(&p);
+                  let alt = cover_alt(&p);
+                  let cover_caption = p
+                      .cover
+                      .as_ref()
+                      .and_then(|c| c.caption.clone())
+                      .unwrap_or_else(|| "ภาพจากคลิปต้นฉบับ".to_string());
+                  let share_image = p.cover.as_ref().map(|cover| {
+                      if cover.src.starts_with("http") || cover.src.starts_with("data:") {
+                          cover.src.clone()
                       } else {
-                          p.meta.description.clone()
-                      };
-                      let author = p
-                          .meta
-                          .author
-                          .clone()
-                          .unwrap_or_else(|| site::AUTHOR.to_string());
-                      let tags = p.meta.tags.clone();
-                      let date = format_date(&p.meta.date);
-                      let lang = p.meta.lang;
-                      let reading = p.reading_time;
-                      let has_related = !related.is_empty();
+                          format!("{}{}", site::SITE_URL, cover.src)
+                      }
+                  });
+                  let page_url = format!("{}/post/{}", site::SITE_URL, p.slug);
+                  let has_related = !related.is_empty();
 
-                      view! {
-                          <Title text=title.clone()/>
-                          <Meta name="description" content=desc.clone()/>
-                          <Meta property="og:title" content=title.clone()/>
-                          <Meta property="og:description" content=desc.clone()/>
-                          <Meta property="og:type" content="article"/>
+                  view! {
+                      <Title text=title.clone()/>
+                      <Meta name="description" content=desc.clone()/>
+                      <Meta property="og:title" content=title.clone()/>
+                      <Meta property="og:description" content=desc.clone()/>
+                      <Meta property="og:type" content="article"/>
+                      <Meta property="og:url" content=page_url.clone()/>
+                      {share_image.map(|image| view! {
+                          <Meta property="og:image" content=image.clone()/>
+                          <Meta name="twitter:image" content=image.clone()/>
+                          <Meta name="twitter:card" content="summary_large_image"/>
+                      })}
 
-                          <article class="article" lang=lang.code()>
-                              <header class="article-header">
-                                  <leptos_router::components::A href=crate::util::href("/")>
-                                      <span class="back-link">"← กลับไปหน้าบทความ"</span>
-                                  </leptos_router::components::A>
+                      <div class="reading-progress" aria-hidden="true"><span></span></div>
+
+                      <article class="article" lang=lang.code()>
+                          <div class="container article-top">
+                              <leptos_router::components::A href=crate::util::href("/")>
+                                  <span class="back-link">"← บทความทั้งหมด"</span>
+                              </leptos_router::components::A>
+                              <span class="article-top-meta">{format!("FIELD NOTE · {section_count} หัวข้อ")}</span>
+                          </div>
+
+                          {cover.map(|src| view! {
+                              <figure class="article-hero">
+                                  <img src=src alt=alt.clone() loading="eager" decoding="async"/>
+                                  <figcaption class="article-hero-caption">{cover_caption.clone()}</figcaption>
+                              </figure>
+                          })}
+
+                          <header class="container article-header">
+                              <div class="article-heading">
+                                  <p class="eyebrow">{format!("{tag} · {reading} นาทีอ่าน")}</p>
+                                  <h1 class="article-title">{heading.clone()}</h1>
+                                  <p class="article-deck">{deck.clone()}</p>
+                              </div>
+                              <aside class="article-side">
+                                  <dl class="article-facts">
+                                      <div>
+                                          <dt>"เผยแพร่"</dt>
+                                          <dd>{date}</dd>
+                                      </div>
+                                      <div>
+                                          <dt>"ความยาว"</dt>
+                                          <dd>{format!("{reading} นาที")}</dd>
+                                      </div>
+                                      <div>
+                                          <dt>"ผู้เขียน"</dt>
+                                          <dd>{author}</dd>
+                                      </div>
+                                      <div>
+                                          <dt>"ภาษา"</dt>
+                                          <dd>{lang.label()}</dd>
+                                      </div>
+                                  </dl>
                                   <div class="article-tags">
                                       {tags
                                           .iter()
@@ -104,42 +179,84 @@ pub fn Post() -> impl IntoView {
                                           .map(|t| view! { <span class="tag-chip static">{t}</span> })
                                           .collect::<Vec<_>>()}
                                   </div>
-                                  <h1 class="article-title">{title}</h1>
-                                  <div class="article-meta">
-                                      <LangBadge lang=lang/>
-                                      <span>{date}</span>
-                                      <span class="dot">"·"</span>
-                                      <span>{format!("{reading} นาทีอ่าน")}</span>
-                                      <span class="dot">"·"</span>
-                                      <span>{author}</span>
-                                  </div>
-                              </header>
+                              </aside>
+                          </header>
+
+                          <div class="container article-body">
+                              <Show when=move || has_toc>
+                                  <nav class="toc" aria-label="สารบัญบทความ">
+                                      <p class="toc-title">"ในบทความนี้"</p>
+                                      <ol>
+                                          {toc
+                                              .iter()
+                                              .map(|h| view! {
+                                                  <li><a href=format!("#{}", h.id)>{h.text.clone()}</a></li>
+                                              })
+                                              .collect::<Vec<_>>()}
+                                      </ol>
+                                  </nav>
+                              </Show>
 
                               <div
                                   class="prose"
                                   inner_html=Signal::derive(move || html.get())
                                   on:click=on_prose_click
                               ></div>
-                          </article>
 
-                          <Show when=move || has_related>
-                              <section class="related">
-                                  <h2 class="related-title">"บทความที่เกี่ยวข้อง"</h2>
-                                  <div class="post-index">
-                                      {related
+                              <footer class="article-footer">
+                                  <div class="article-footer-tags">
+                                      <span class="article-footer-label">"แท็ก"</span>
+                                      {tags
                                           .iter()
                                           .cloned()
-                                          .map(|rp| view! { <PostCard post=rp/> })
+                                          .map(|t| view! { <span class="tag-chip static">{t}</span> })
                                           .collect::<Vec<_>>()}
                                   </div>
-                              </section>
-                          </Show>
-                      }
-                  })
-              }}
-          </Show>
-      </div>
+                                  <a class="back-top" href="#main">"↑ กลับด้านบน"</a>
+                              </footer>
+                          </div>
+                      </article>
+
+                      <Show when=move || has_related>
+                          <section class="container related">
+                              <header class="section-head">
+                                  <div>
+                                      <p class="eyebrow">"KEEP READING"</p>
+                                      <h2 class="section-title">"อ่านต่อ"</h2>
+                                  </div>
+                              </header>
+                              <div class="story-grid story-grid-related">
+                                  {related
+                                      .iter()
+                                      .cloned()
+                                      .map(|rp| view! { <PostCard post=rp/> })
+                                      .collect::<Vec<_>>()}
+                              </div>
+                          </section>
+                      </Show>
+                  }
+              })
+          }}
+      </Show>
   }
+}
+
+/// If a shared link carries a TOC anchor, the target did not exist when the
+/// SPA first booted. Resolve it once the article HTML has been injected.
+/// Otherwise start a newly opened article at the top.
+fn scroll_to_fragment_or_top() {
+  let Some(window) = web_sys::window() else {
+    return;
+  };
+  let hash = window.location().hash().unwrap_or_default();
+  let id = hash.trim_start_matches('#');
+  if !id.is_empty()
+    && let Some(element) = window.document().and_then(|doc| doc.get_element_by_id(id))
+  {
+    element.scroll_into_view();
+    return;
+  }
+  window.scroll_to_with_x_and_y(0.0, 0.0);
 }
 
 /// Mount live demo components into any `.demo-slot` elements left by the

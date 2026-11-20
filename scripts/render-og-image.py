@@ -3,6 +3,9 @@
 
 Usage:
     python scripts/render-og-image.py
+
+The card uses a real frame from the source videos (the same cover set as the
+site) so shared links carry the journal's photography, not a generic logo.
 """
 
 from __future__ import annotations
@@ -13,50 +16,73 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "og-image.png"
+COVER = ROOT / "content" / "assets" / "spoon-five-seasons.jpg"
 
 W, H = 1200, 630
-img = Image.new("RGB", (W, H), "#061a20")
+
+# Fill the card with the cover, cropping the excess width.
+photo = Image.open(COVER).convert("RGB")
+scale = max(W / photo.width, H / photo.height)
+photo = photo.resize(
+    (round(photo.width * scale), round(photo.height * scale)),
+    Image.Resampling.LANCZOS,
+)
+left = (photo.width - W) // 2
+top = (photo.height - H) // 2
+photo = photo.crop((left, top, left + W, top + H))
+
+# Darken the photo enough for the type, strongest on the left.
+shade = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+shade_px = shade.load()
+for y in range(H):
+    for x in range(W):
+        # 78% at the left edge, fading out around 72% of the width.
+        strength = max(0.0, 1.0 - x / (W * 0.72))
+        alpha = int(205 * strength)
+        # A little extra darkness toward the bottom.
+        alpha = max(alpha, int(90 * (y / H) ** 2))
+        shade_px[x, y] = (5, 14, 13, min(alpha, 225))
+photo = Image.alpha_composite(photo.convert("RGBA"), shade).convert("RGB")
+
+img = photo
 draw = ImageDraw.Draw(img, "RGBA")
 
-# Vertical deep-sea gradient.
-for y in range(H):
-    t = y / (H - 1)
-    r = int(6 + (11 - 6) * t)
-    g = int(26 + (58 - 26) * t)
-    b = int(32 + (66 - 32) * t)
-    draw.line([(0, y), (W, y)], fill=(r, g, b, 255))
+accent = "#f08a63"
+cream = "#f3eee4"
+muted = "#b8c6bf"
 
-# Soft wave bands.
-for i in range(7):
-    y = 470 + i * 24
-    color = (94, 234, 212, 10 + i * 3)
-    draw.arc([-220 + i * 40, y - 150, 700 + i * 40, y + 80], 200, 340, fill=color, width=2)
-    draw.arc([500 + i * 30, y - 170, 1480 + i * 30, y + 90], 200, 340, fill=color, width=2)
-
-# Accent rule.
-draw.rectangle([90, 86, 168, 92], fill="#5eead4")
-
-# Hook emblem on the right.
-cx, cy = 930, 250
-draw.ellipse([cx - 132, cy - 132, cx + 132, cy + 132], outline=(94, 234, 212, 80), width=2)
-draw.line([(cx - 30, cy - 92), (cx - 30, cy + 26)], fill="#f4ead9", width=14)
-draw.arc([cx - 30, cy + 2, cx + 82, cy + 114], 180, 360, fill="#f4ead9", width=14)
-draw.arc([cx - 52, cy - 112, cx - 8, cy - 68], 0, 360, fill="#5eead4", width=8)
-draw.line([(cx + 52, cy + 26), (cx + 24, cy + 44)], fill="#5eead4", width=10)
-draw.arc([cx - 128, cy + 92, cx + 128, cy + 196], 200, 340, fill="#5eead4", width=5)
-
-# Text.
 font_dir = Path(r"C:\Windows\Fonts")
-title_font = ImageFont.truetype(str(font_dir / "LeelawUI.ttf"), 74)
-thai_font = ImageFont.truetype(str(font_dir / "LeelawUI.ttf"), 34)
-small_font = ImageFont.truetype(str(font_dir / "tahoma.ttf"), 25)
+title_font = ImageFont.truetype(str(font_dir / "LeelaUIb.ttf"), 70)
+thai_font = ImageFont.truetype(str(font_dir / "LeelawUI.ttf"), 31)
+small_font = ImageFont.truetype(str(font_dir / "tahoma.ttf"), 22)
+mono_font = ImageFont.truetype(str(font_dir / "consola.ttf"), 19)
 
-draw.text((90, 120), "FISHING NOTES", font=small_font, fill="#5eead4")
-draw.text((90, 168), "บันทึกการตกปลา", font=title_font, fill="#f4ead9")
-draw.text((90, 254), "เหยื่อปลอมจากคลิปญี่ปุ่น", font=title_font, fill="#f4ead9")
-draw.text((90, 372), "ซีบาส · แบส · อีจิ้ง · เท็นยะ", font=thai_font, fill="#a7d9cf")
-draw.text((90, 430), "อ่านน้ำให้เป็น แล้วปลาจะตามมา", font=thai_font, fill="#7fb8ae")
-draw.text((90, 548), "suradet-ps.github.io/fishing-notes", font=small_font, fill="#6f9d95")
+# Accent rule and section label.
+draw.rectangle([80, 78, 148, 83], fill=accent)
+draw.text((80, 104), "FISHING NOTES  /  FIELD NOTES FROM JAPAN", font=mono_font, fill=accent)
+
+# Headline.
+draw.text((78, 158), "อ่านน้ำให้เป็น", font=title_font, fill=cream)
+draw.text((78, 244), "แล้วปลาจะตามมา", font=title_font, fill=accent)
+
+# Deck and topics.
+draw.text(
+    (82, 360),
+    "บันทึกตกปลาเหยื่อปลอมจากคลิปโปรญี่ปุ่น",
+    font=thai_font,
+    fill=cream,
+)
+draw.text(
+    (82, 414),
+    "ซีบาส · แบส · อีจิ้ง · เท็นยะ",
+    font=thai_font,
+    fill=muted,
+)
+
+# Footer line.
+draw.line([(82, 540), (1118, 540)], fill=(243, 238, 228, 55), width=1)
+draw.text((82, 560), "suradet-ps.github.io/fishing-notes", font=small_font, fill=muted)
+draw.text((1118, 560), "ภาพจากคลิปต้นฉบับ", font=small_font, fill=muted, anchor="ra")
 
 img.save(OUT, "PNG", optimize=True)
-print(f"saved {OUT}")
+print(f"saved {OUT} ({W}x{H})")
