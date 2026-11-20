@@ -34,6 +34,15 @@ fn topic_counts(posts: &[Post]) -> Vec<(String, usize)> {
     .collect()
 }
 
+/// Search text copied from a rendered card can contain display-only word
+/// joiners and non-breaking hyphens. Normalize both sides of the comparison.
+fn normalize_search(text: &str) -> String {
+  text
+    .replace('\u{2011}', "-")
+    .replace('\u{2060}', "")
+    .to_lowercase()
+}
+
 /// Home page: a magazine cover story, a quiet topic index, and the library.
 #[component]
 pub fn Home() -> impl IntoView {
@@ -45,13 +54,14 @@ pub fn Home() -> impl IntoView {
 
   let (query, set_query) = signal(String::new());
   let (active_tag, set_active_tag) = signal(None::<String>);
+  let search_ref = NodeRef::<leptos::html::Input>::new();
 
   let browsing = Memo::new(move |_| query.get().trim().is_empty() && active_tag.get().is_none());
 
   let filtered = Memo::new({
     let posts = posts.clone();
     move |_| {
-      let q = query.get().trim().to_lowercase();
+      let q = normalize_search(query.get().trim());
       let tag = active_tag.get();
       let all = posts
         .iter()
@@ -61,9 +71,9 @@ pub fn Home() -> impl IntoView {
             .map(|t| p.meta.tags.iter().any(|x| x == t))
             .unwrap_or(true);
           let matches_q = q.is_empty()
-            || p.meta.title.to_lowercase().contains(&q)
-            || p.meta.description.to_lowercase().contains(&q)
-            || p.meta.tags.iter().any(|t| t.to_lowercase().contains(&q));
+            || normalize_search(&p.meta.title).contains(&q)
+            || normalize_search(&p.meta.description).contains(&q)
+            || p.meta.tags.iter().any(|t| normalize_search(t).contains(&q));
           matches_tag && matches_q
         })
         .cloned()
@@ -102,7 +112,7 @@ pub fn Home() -> impl IntoView {
                               "ให้เห็นจังหวะมือ จังหวะคัน และบรรยากาศหน้างาน"
                           </p>
                           <div class="hero-actions">
-                              <a class="btn-primary" href="#library">
+                              <a class="btn-primary" href="#library" rel="external">
                                   "เริ่มอ่านบทความ " <ArrowIcon/>
                               </a>
                               <span class="hero-note">"ภาพประกอบจากคลิปต้นฉบับ"</span>
@@ -126,7 +136,7 @@ pub fn Home() -> impl IntoView {
               </section>
           </Show>
 
-          <section class="section library" id="library">
+          <section class="section library" id="library" tabindex="-1">
               <div class="container">
                   <header class="section-head library-head">
                       <div>
@@ -141,6 +151,7 @@ pub fn Home() -> impl IntoView {
                               class="search-input"
                               aria-label="ค้นหาบทความ"
                               placeholder="ค้นหา เช่น ซีบาส, อีจิ้ง, การตีเหยื่อ…"
+                              node_ref=search_ref
                               prop:value=move || query.get()
                               on:input=move |ev| set_query.set(event_target_value(&ev))
                           />
@@ -199,6 +210,9 @@ pub fn Home() -> impl IntoView {
                               on:click=move |_| {
                                   set_query.set(String::new());
                                   set_active_tag.set(None);
+                                  if let Some(input) = search_ref.get() {
+                                      let _ = input.focus();
+                                  }
                               }
                           >
                               "ล้างตัวกรอง"
@@ -216,7 +230,13 @@ pub fn Home() -> impl IntoView {
                       }}
                   </div>
 
-                  <Show when=move || filtered_show.get().is_empty()>
+                  <Show when=move || {
+                      if browsing.get() {
+                          total == 0
+                      } else {
+                          filtered_show.get().is_empty()
+                      }
+                  }>
                       <div class="empty-state">
                           <span class="empty-mark"><FishMark/></span>
                           <p class="empty-title">"ยังไม่พบเรื่องที่ตรงกับคำค้น"</p>
@@ -226,5 +246,18 @@ pub fn Home() -> impl IntoView {
               </div>
           </section>
       </div>
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::normalize_search;
+
+  #[test]
+  fn search_normalizes_display_only_characters() {
+    assert_eq!(
+      normalize_search("บท\u{2060}เรียน 1\u{2011}2\u{2011}3"),
+      "บทเรียน 1-2-3"
+    );
   }
 }

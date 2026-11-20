@@ -26,13 +26,10 @@ fn main() {
 
   for post in load_posts() {
     let url = format!("{}/post/{}", site::SITE_URL, post.slug);
-    let image = post.cover.as_ref().map(|cover| {
-      if cover.src.starts_with("http") {
-        cover.src.clone()
-      } else {
-        format!("{}{}", site::SITE_URL, cover.src)
-      }
-    });
+    let image = post
+      .cover
+      .as_ref()
+      .and_then(|cover| site::share_image_url(&cover.src));
     let page = render(
       &template,
       &post.meta.title,

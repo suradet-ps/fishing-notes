@@ -63,7 +63,10 @@ pub fn display_title(title: &str) -> String {
 /// A resolved, base-aware cover URL.
 pub fn cover_src(post: &Post) -> Option<String> {
   post.cover.as_ref().map(|cover| {
-    if cover.src.starts_with("http") || cover.src.starts_with("data:") {
+    if cover.src.starts_with("http")
+      || cover.src.starts_with("//")
+      || cover.src.starts_with("data:")
+    {
       cover.src.clone()
     } else {
       crate::util::href(&cover.src)
@@ -246,6 +249,7 @@ pub fn FeatureStory(post: Post) -> impl IntoView {
   let description = display_title(&post_card_description(&post.meta.description));
   let reading = post.reading_time;
   let date = crate::util::format_date(&post.meta.date);
+  let lang = post.meta.lang;
 
   view! {
       <A href=href>
@@ -262,7 +266,7 @@ pub fn FeatureStory(post: Post) -> impl IntoView {
                       <span class="dot">"·"</span>
                       <span>{format!("{reading} นาทีอ่าน")}</span>
                   </div>
-                  <h2 class="feature-title">{title}</h2>
+                  <h2 class="feature-title" lang=lang.code()>{title}</h2>
                   <p class="feature-desc">{description}</p>
                   <div class="feature-foot">
                       <span class="feature-date">{date}</span>
@@ -302,7 +306,7 @@ pub fn PostCard(post: Post) -> impl IntoView {
                     <span class="dot">"·"</span>
                     <span>{format!("{reading} นาที")}</span>
                 </div>
-                <h3 class="story-card-title">{title}</h3>
+                <h3 class="story-card-title" lang=lang.code()>{title}</h3>
                 <p class="story-card-desc">{description}</p>
                 <div class="story-card-foot">
                     <time>{date}</time>

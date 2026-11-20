@@ -169,7 +169,7 @@ fn add_heading_ids(html: &str) -> (String, Vec<Heading>) {
 
     out.push_str("<h2 id=\"");
     out.push_str(&id);
-    out.push_str("\">");
+    out.push_str("\" tabindex=\"-1\">");
     out.push_str(inner);
     out.push_str("</h2>");
     rest = &after_open[end + "</h2>".len()..];
@@ -537,12 +537,16 @@ mod tests {
     let md = "## หนึ่ง\n\nText\n\n## สอง\n\nMore";
     let doc = render_document(md);
     assert!(
-      doc.html.contains("<h2 id=\"section-1\">หนึ่ง</h2>"),
+      doc
+        .html
+        .contains("<h2 id=\"section-1\" tabindex=\"-1\">หนึ่ง</h2>"),
       "{}",
       doc.html
     );
     assert!(
-      doc.html.contains("<h2 id=\"section-2\">สอง</h2>"),
+      doc
+        .html
+        .contains("<h2 id=\"section-2\" tabindex=\"-1\">สอง</h2>"),
       "{}",
       doc.html
     );

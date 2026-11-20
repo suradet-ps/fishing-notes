@@ -189,6 +189,15 @@ fn strip_leading_figure(html: &str, cover_src: &str) -> (String, Option<String>)
     return (html.to_string(), None);
   };
   let p_end = img_pos + close + 4;
+  let Some(img_end) = html[img_pos..].find('>').map(|i| img_pos + i + 1) else {
+    return (html.to_string(), None);
+  };
+  if img_end > p_end - 4
+    || !html[p_start + 3..img_pos].trim().is_empty()
+    || !html[img_end..p_end - 4].trim().is_empty()
+  {
+    return (html.to_string(), None);
+  }
 
   let mut out = String::with_capacity(html.len());
   out.push_str(&html[..p_start]);
@@ -208,18 +217,45 @@ fn strip_leading_figure(html: &str, cover_src: &str) -> (String, Option<String>)
     }
   }
 
-  (renumber_captions(&out, -1), caption)
+  let removed_numbered = caption
+    .as_deref()
+    .is_some_and(|text| text.contains("ภาพที่ "));
+  if removed_numbered {
+    out = renumber_captions(&out, -1);
+  }
+  (out, caption)
 }
 
-/// Shift every `ภาพที่ N:` label by `delta`, never below 1.
+/// Shift caption numbers inside `<p class="prose-caption">` blocks only.
 fn renumber_captions(html: &str, delta: i32) -> String {
+  const OPEN: &str = "<p class=\"prose-caption\">";
+  let mut out = String::with_capacity(html.len());
+  let mut rest = html;
+  while let Some(pos) = rest.find(OPEN) {
+    out.push_str(&rest[..pos]);
+    out.push_str(OPEN);
+    let after = &rest[pos + OPEN.len()..];
+    let Some(end) = after.find("</p>") else {
+      out.push_str(after);
+      return out;
+    };
+    out.push_str(&renumber_caption_labels(&after[..end], delta));
+    out.push_str("</p>");
+    rest = &after[end + 4..];
+  }
+  out.push_str(rest);
+  out
+}
+
+/// Shift every `ภาพที่ N:` label in one caption, never below 1.
+fn renumber_caption_labels(html: &str, delta: i32) -> String {
   const MARKER: &str = "ภาพที่ ";
   let mut out = String::with_capacity(html.len());
   let mut rest = html;
   while let Some(pos) = rest.find(MARKER) {
     out.push_str(&rest[..pos]);
     let after = &rest[pos + MARKER.len()..];
-    let digits = after.chars().take_while(char::is_ascii_digit).count();
+    let digits = after.chars().take_while(|c| c.is_ascii_digit()).count();
     if digits == 0 || !after[digits..].starts_with(':') {
       out.push_str(MARKER);
       rest = after;
@@ -359,7 +395,44 @@ mod tests {
   }
 
   #[test]
+  fn cover_stripping_preserves_a_mixed_image_paragraph() {
+    let html = "<p><img src=\"/assets/a.jpg\" alt=\"a\" /> Important instructions.</p>";
+    let (stripped, caption) = strip_leading_figure(html, "/assets/a.jpg");
+    assert_eq!(stripped, html);
+    assert_eq!(caption, None);
+  }
+
+  #[test]
+  fn unnumbered_caption_does_not_shift_remaining_numbers() {
+    let html = concat!(
+      "<p><img src=\"/assets/a.jpg\" alt=\"a\" /></p>\n",
+      "<p class=\"prose-caption\">no number</p>\n",
+      "<p class=\"prose-caption\"><strong>ภาพที่ 2:</strong> second</p>"
+    );
+    let (stripped, caption) = strip_leading_figure(html, "/assets/a.jpg");
+    assert_eq!(caption.as_deref(), Some("no number"));
+    assert!(stripped.contains("ภาพที่ 2:</strong> second"), "{stripped}");
+  }
+
+  #[test]
+  fn renumber_only_caption_paragraphs() {
+    let html = concat!(
+      "<p>ภาพที่ 2: prose stays put</p>",
+      "<p class=\"prose-caption\"><strong>ภาพที่ 2:</strong> caption moves</p>",
+      "<code>ภาพที่ 2: code stays put</code>"
+    );
+    let out = renumber_captions(html, -1);
+    assert!(out.contains("<p>ภาพที่ 2: prose stays put</p>"), "{out}");
+    assert!(
+      out.contains("<p class=\"prose-caption\"><strong>ภาพที่ 1:</strong> caption moves</p>"),
+      "{out}"
+    );
+    assert!(out.contains("<code>ภาพที่ 2: code stays put</code>"), "{out}");
+  }
+
+  #[test]
   fn caption_number_never_drops_below_one() {
-    assert_eq!(renumber_captions("ภาพที่ 1: x", -1), "ภาพที่ 1: x");
+    let html = "<p class=\"prose-caption\"><strong>ภาพที่ 1:</strong> x</p>";
+    assert_eq!(renumber_captions(html, -1), html);
   }
 }

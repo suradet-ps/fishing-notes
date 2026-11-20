@@ -64,7 +64,8 @@ pub fn Post() -> impl IntoView {
     let window = web_sys::window().expect("no window");
     let cb = wasm_bindgen::prelude::Closure::once(Box::new(move |_t: f64| {
       mount_demos();
-      scroll_to_fragment_or_top();
+      scroll_to_fragment();
+      crate::util::update_reading_progress();
     }) as Box<dyn FnMut(f64)>);
     let _ = window.request_animation_frame(cb.as_ref().unchecked_ref());
     cb.forget();
@@ -107,13 +108,10 @@ pub fn Post() -> impl IntoView {
                       .as_ref()
                       .and_then(|c| c.caption.clone())
                       .unwrap_or_else(|| "ภาพจากคลิปต้นฉบับ".to_string());
-                  let share_image = p.cover.as_ref().map(|cover| {
-                      if cover.src.starts_with("http") || cover.src.starts_with("data:") {
-                          cover.src.clone()
-                      } else {
-                          format!("{}{}", site::SITE_URL, cover.src)
-                      }
-                  });
+                  let share_image = p
+                      .cover
+                      .as_ref()
+                      .and_then(|cover| site::share_image_url(&cover.src));
                   let page_url = format!("{}/post/{}", site::SITE_URL, p.slug);
                   let has_related = !related.is_empty();
 
@@ -132,7 +130,7 @@ pub fn Post() -> impl IntoView {
 
                       <div class="reading-progress" aria-hidden="true"><span></span></div>
 
-                      <article class="article" lang=lang.code()>
+                      <article class="article">
                           <div class="container article-top">
                               <leptos_router::components::A href=crate::util::href("/")>
                                   <span class="back-link">"← บทความทั้งหมด"</span>
@@ -150,8 +148,8 @@ pub fn Post() -> impl IntoView {
                           <header class="container article-header">
                               <div class="article-heading">
                                   <p class="eyebrow">{format!("{tag} · {reading} นาทีอ่าน")}</p>
-                                  <h1 class="article-title">{heading.clone()}</h1>
-                                  <p class="article-deck">{deck.clone()}</p>
+                                  <h1 class="article-title" lang=lang.code()>{heading.clone()}</h1>
+                                  <p class="article-deck" lang=lang.code()>{deck.clone()}</p>
                               </div>
                               <aside class="article-side">
                                   <dl class="article-facts">
@@ -186,11 +184,11 @@ pub fn Post() -> impl IntoView {
                               <Show when=move || has_toc>
                                   <nav class="toc" aria-label="สารบัญบทความ">
                                       <p class="toc-title">"ในบทความนี้"</p>
-                                      <ol>
+                                      <ol lang=lang.code()>
                                           {toc
                                               .iter()
                                               .map(|h| view! {
-                                                  <li><a href=format!("#{}", h.id)>{h.text.clone()}</a></li>
+                                                  <li><a href=format!("#{}", h.id) rel="external">{h.text.clone()}</a></li>
                                               })
                                               .collect::<Vec<_>>()}
                                       </ol>
@@ -199,6 +197,7 @@ pub fn Post() -> impl IntoView {
 
                               <div
                                   class="prose"
+                                  lang=lang.code()
                                   inner_html=Signal::derive(move || html.get())
                                   on:click=on_prose_click
                               ></div>
@@ -212,7 +211,7 @@ pub fn Post() -> impl IntoView {
                                           .map(|t| view! { <span class="tag-chip static">{t}</span> })
                                           .collect::<Vec<_>>()}
                                   </div>
-                                  <a class="back-top" href="#main">"↑ กลับด้านบน"</a>
+                                  <a class="back-top" href="#main" rel="external">"↑ กลับด้านบน"</a>
                               </footer>
                           </div>
                       </article>
@@ -241,22 +240,34 @@ pub fn Post() -> impl IntoView {
   }
 }
 
-/// If a shared link carries a TOC anchor, the target did not exist when the
-/// SPA first booted. Resolve it once the article HTML has been injected.
-/// Otherwise start a newly opened article at the top.
-fn scroll_to_fragment_or_top() {
+/// Shared and cold-loaded TOC anchors do not exist when the SPA first boots.
+/// Resolve them once the article HTML has been injected. Normal navigation
+/// scrolling is left to the router/browser.
+fn scroll_to_fragment() {
   let Some(window) = web_sys::window() else {
     return;
   };
   let hash = window.location().hash().unwrap_or_default();
   let id = hash.trim_start_matches('#');
   if !id.is_empty()
-    && let Some(element) = window.document().and_then(|doc| doc.get_element_by_id(id))
+    && let Some(document) = window.document()
+    && let Some(element) = find_fragment(&document, id)
   {
+    crate::util::clear_pending_restore();
     element.scroll_into_view();
     return;
   }
-  window.scroll_to_with_x_and_y(0.0, 0.0);
+  crate::util::restore_or_top();
+}
+
+/// Resolve a literal fragment id, then its percent-decoded form.
+fn find_fragment(document: &web_sys::Document, id: &str) -> Option<web_sys::Element> {
+  document.get_element_by_id(id).or_else(|| {
+    js_sys::decode_uri_component(id)
+      .ok()
+      .and_then(|decoded| decoded.as_string())
+      .and_then(|decoded| document.get_element_by_id(&decoded))
+  })
 }
 
 /// Mount live demo components into any `.demo-slot` elements left by the
