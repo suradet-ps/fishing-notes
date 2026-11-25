@@ -53,6 +53,7 @@ COVERS: dict[str, str] = {
     "tilapia-territory-okinawa": "tilapia-tb-catch.jpg",
     "tsurihack-tada-maki-challenge": "tsurihack-sunset.jpg",
     "vibration-spring-summer": "vibration-ono-lineup.jpg",
+    "zamami-slj-tenya": "zamami-gt.jpg",
 }
 
 
@@ -61,6 +62,12 @@ COVERS: dict[str, str] = {
 LEFT_CROP: dict[str, float] = {
     "murata-baitcasting": 0.22,
     "murata-spinning-casting": 0.22,
+}
+
+# Some stills need the cinematic crop nudged upward to clear a lower-third
+# caption without cutting the subject. The value shifts the crop window.
+TOP_OFFSET: dict[str, int] = {
+    "zamami-slj-tenya": -33,
 }
 
 
@@ -95,7 +102,10 @@ def main() -> None:
         # 21:9, full width. The small top offset trims channel bugs and keeps
         # the subject from sitting against the very top edge.
         height = round(image.width * 9 / 21)
-        top = max(0, (image.height - height) // 2 - 12)
+        top = max(
+            0,
+            (image.height - height) // 2 - 12 + TOP_OFFSET.get(slug, 0),
+        )
         image = image.crop((0, top, image.width, top + height))
         image = grade(image)
 
