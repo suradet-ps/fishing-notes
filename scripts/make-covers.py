@@ -30,6 +30,7 @@ ASSETS = ROOT / "content" / "assets"
 # slug -> source frame in content/assets/
 COVERS: dict[str, str] = {
     "bass-point-strategy": "bass-point-overhang.jpg",
+    "chuzenji-tinyklash-dark-hours": "chuzenji-opening.jpg",
     "eging-basics": "eging-basics-cast.jpg",
     "eging-beginner": "eging-beginner-cast.jpg",
     "eging-casting": "eging-casting-cast.jpg",
