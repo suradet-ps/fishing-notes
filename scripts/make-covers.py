@@ -32,6 +32,7 @@ COVERS: dict[str, str] = {
     "bass-point-strategy": "bass-point-overhang.jpg",
     "chuzenji-opening-day-2026": "chuzenji-opening-day-first-fish.jpg",
     "chuzenji-tinyklash-dark-hours": "chuzenji-opening.jpg",
+    "chuzenji-x9-resolution": "varivas19-lake.jpg",
     "eging-basics": "eging-basics-cast.jpg",
     "eging-beginner": "eging-beginner-cast.jpg",
     "eging-casting": "eging-casting-cast.jpg",
@@ -72,6 +73,7 @@ LEFT_CROP: dict[str, float] = {
 # Some stills need the cinematic crop nudged upward to clear a lower-third
 # caption without cutting the subject. The value shifts the crop window.
 TOP_OFFSET: dict[str, int] = {
+    "chuzenji-x9-resolution": -23,
     "genkai-otoshikomi": -33,
     "zamami-slj-tenya": -33,
 }

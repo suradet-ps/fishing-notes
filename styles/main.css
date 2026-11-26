@@ -1490,6 +1490,7 @@ button {
 
 .prose .table-wrap table {
     margin: 0;
+    min-width: 42rem;
 }
 
 .prose .table-wrap table th:first-child,
