@@ -59,6 +59,7 @@ COVERS: dict[str, str] = {
     "tenya-madai": "tenya-big-fish.jpg",
     "tilapia-popper-koz": "tilapia-koz-fight.jpg",
     "tilapia-territory-okinawa": "tilapia-tb-catch.jpg",
+    "timon-rhomy-higashiyama": "rhomy-opening.jpg",
     "tsurihack-tada-maki-challenge": "tsurihack-sunset.jpg",
     "vibration-spring-summer": "vibration-ono-lineup.jpg",
     "zamami-slj-tenya": "zamami-gt.jpg",
@@ -70,6 +71,7 @@ COVERS: dict[str, str] = {
 LEFT_CROP: dict[str, float] = {
     "murata-baitcasting": 0.22,
     "murata-spinning-casting": 0.22,
+    "timon-rhomy-higashiyama": 0.06,
 }
 
 # Some stills need the cinematic crop nudged upward to clear a lower-third
