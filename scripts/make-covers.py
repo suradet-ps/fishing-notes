@@ -46,6 +46,7 @@ COVERS: dict[str, str] = {
     "ono-casting-clinic": "ono-casting-crowd.jpg",
     "popper-lily-pad-pond": "popper-pond-catch.jpg",
     "real-steel-steel-upper": "onuma-catch.jpg",
+    "rivanyoro-feet-bite": "rivanyoro-catch.jpg",
     "sai-river-autumn-trout": "sai-opening.jpg",
     "saltwater-spoon-shore": "saltwater-spoon-catch.jpg",
     "seabass-20hour-challenge": "seabass-20h-night-fish.jpg",
@@ -75,6 +76,7 @@ LEFT_CROP: dict[str, float] = {
 TOP_OFFSET: dict[str, int] = {
     "chuzenji-x9-resolution": -23,
     "genkai-otoshikomi": -33,
+    "rivanyoro-feet-bite": -34,
     "zamami-slj-tenya": -33,
 }
 
