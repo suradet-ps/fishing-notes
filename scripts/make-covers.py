@@ -46,6 +46,7 @@ COVERS: dict[str, str] = {
     "ono-casting-clinic": "ono-casting-crowd.jpg",
     "popper-lily-pad-pond": "popper-pond-catch.jpg",
     "real-steel-steel-upper": "onuma-catch.jpg",
+    "ridemarvel-switchback": "switchback-fight.jpg",
     "rivanyoro-feet-bite": "rivanyoro-catch.jpg",
     "sai-river-autumn-trout": "sai-opening.jpg",
     "saltwater-spoon-shore": "saltwater-spoon-catch.jpg",
