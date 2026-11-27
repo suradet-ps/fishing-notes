@@ -33,6 +33,7 @@ COVERS: dict[str, str] = {
     "chuzenji-opening-day-2026": "chuzenji-opening-day-first-fish.jpg",
     "chuzenji-tinyklash-dark-hours": "chuzenji-opening.jpg",
     "chuzenji-x9-resolution": "varivas19-lake.jpg",
+    "daiwa-silver-creek-stream": "stream-cover.jpg",
     "eging-basics": "eging-basics-cast.jpg",
     "eging-beginner": "eging-beginner-cast.jpg",
     "eging-casting": "eging-casting-cast.jpg",
@@ -70,6 +71,7 @@ COVERS: dict[str, str] = {
 # Frames with a channel bug or title card on the left can trim it away before
 # the cinematic crop. The value is the fraction removed from the left edge.
 LEFT_CROP: dict[str, float] = {
+    "daiwa-silver-creek-stream": 0.06,
     "murata-baitcasting": 0.22,
     "murata-spinning-casting": 0.22,
     "timon-rhomy-higashiyama": 0.06,
