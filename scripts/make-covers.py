@@ -55,6 +55,7 @@ COVERS: dict[str, str] = {
     "seabass-spoon-shallow-river": "seabass-spoon-river-catch.jpg",
     "shore-metal-vibration": "shore-vibration-cast.jpg",
     "spoon-five-techniques": "spoon-five-seasons.jpg",
+    "surface-start-rotation": "surface-start-rotation-strike.jpg",
     "tenya-madai": "tenya-big-fish.jpg",
     "tilapia-popper-koz": "tilapia-koz-fight.jpg",
     "tilapia-territory-okinawa": "tilapia-tb-catch.jpg",
