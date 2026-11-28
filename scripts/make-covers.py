@@ -39,6 +39,7 @@ COVERS: dict[str, str] = {
     "eging-casting": "eging-casting-cast.jpg",
     "fuefuki-snow-stream-minnowing": "fuefuki-cover-src.jpg",
     "genkai-otoshikomi": "genkai-opening.jpg",
+    "hiramoto-7-stream-items": "smith-7-items-belt.jpg",
     "hirose14-rock-shore-layers": "hirose14-rock-shore.jpg",
     "kuma-river-ayu": "kuma-ayu-anglers.jpg",
     "metal-vibration-day-game-guide": "ima-wade.jpg",
@@ -84,6 +85,7 @@ LEFT_CROP: dict[str, float] = {
 TOP_OFFSET: dict[str, int] = {
     "chuzenji-x9-resolution": -23,
     "genkai-otoshikomi": -33,
+    "hiramoto-7-stream-items": 40,
     "rivanyoro-feet-bite": -34,
     "ueno-kanna-winter-hakosuchi": -55,
     "zamami-slj-tenya": -33,
