@@ -63,6 +63,7 @@ COVERS: dict[str, str] = {
     "tilapia-territory-okinawa": "tilapia-tb-catch.jpg",
     "timon-rhomy-higashiyama": "rhomy-opening.jpg",
     "tsurihack-tada-maki-challenge": "tsurihack-sunset.jpg",
+    "ueno-kanna-winter-hakosuchi": "hakosuchi-biha.jpg",
     "vibration-spring-summer": "vibration-ono-lineup.jpg",
     "zamami-slj-tenya": "zamami-gt.jpg",
 }
@@ -83,6 +84,7 @@ TOP_OFFSET: dict[str, int] = {
     "chuzenji-x9-resolution": -23,
     "genkai-otoshikomi": -33,
     "rivanyoro-feet-bite": -34,
+    "ueno-kanna-winter-hakosuchi": -55,
     "zamami-slj-tenya": -33,
 }
 
