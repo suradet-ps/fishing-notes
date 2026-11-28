@@ -37,6 +37,7 @@ COVERS: dict[str, str] = {
     "eging-basics": "eging-basics-cast.jpg",
     "eging-beginner": "eging-beginner-cast.jpg",
     "eging-casting": "eging-casting-cast.jpg",
+    "fuefuki-snow-stream-minnowing": "fuefuki-cover-src.jpg",
     "genkai-otoshikomi": "genkai-opening.jpg",
     "hirose14-rock-shore-layers": "hirose14-rock-shore.jpg",
     "kuma-river-ayu": "kuma-ayu-anglers.jpg",
