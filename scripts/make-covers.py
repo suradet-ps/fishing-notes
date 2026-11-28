@@ -35,6 +35,7 @@ COVERS: dict[str, str] = {
     "chuzenji-tinyklash-dark-hours": "chuzenji-opening.jpg",
     "chuzenji-x9-resolution": "varivas19-lake.jpg",
     "daiwa-silver-creek-stream": "stream-cover.jpg",
+    "drift-spin-slide-spoon-guide": "drift-spin-cover-src.jpg",
     "eging-basics": "eging-basics-cast.jpg",
     "eging-beginner": "eging-beginner-cast.jpg",
     "eging-casting": "eging-casting-cast.jpg",
