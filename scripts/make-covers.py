@@ -32,6 +32,7 @@ COVERS: dict[str, str] = {
     "area-trout-beginner-complete-guide": "area-trout-cover-src.jpg",
     "bass-point-strategy": "bass-point-overhang.jpg",
     "chuzenji-opening-day-2026": "chuzenji-opening-day-first-fish.jpg",
+    "chuzenji-bottomtap-spooning": "chuzenji-bottomtap-cover-src.jpg",
     "chuzenji-tinyklash-dark-hours": "chuzenji-opening.jpg",
     "chuzenji-x9-resolution": "varivas19-lake.jpg",
     "daiwa-silver-creek-stream": "stream-cover.jpg",
