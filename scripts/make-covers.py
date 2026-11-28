@@ -42,6 +42,7 @@ COVERS: dict[str, str] = {
     "genkai-otoshikomi": "genkai-opening.jpg",
     "hiramoto-7-stream-items": "smith-7-items-belt.jpg",
     "hirose14-rock-shore-layers": "hirose14-rock-shore.jpg",
+    "kansai-reservoir-lake-strategy-2026": "kansai-cover-src.jpg",
     "kuma-river-ayu": "kuma-ayu-anglers.jpg",
     "metal-vibration-day-game-guide": "ima-wade.jpg",
     "murata-baitcasting": "murata-bait-overhead2.jpg",
